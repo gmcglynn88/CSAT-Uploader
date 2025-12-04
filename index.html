@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <title>CSV Viewer for Genesys Cloud</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- Add Content Security Policy meta tag to prevent external script issues -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://login.mypurecloud.ie https://api.mypurecloud.ie https://raw.githubusercontent.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
   <style>
     :root{
       --primary-color:#63AB8F; --secondary-color:#4A8C7D; --border-color:#DEE2E6;
@@ -89,17 +91,6 @@
       border:1px solid var(--border-color);
       border-radius:6px;
     }
-    .json-preview{
-      background:#f8f9fa;
-      border:1px solid var(--border-color);
-      border-radius:6px;
-      padding:16px;
-      font-family:monospace;
-      font-size:12px;
-      white-space:pre-wrap;
-      max-height:400px;
-      overflow:auto;
-    }
     
     /* Loading spinner */
     .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-in-out infinite; }
@@ -112,13 +103,6 @@
       padding: 12px;
       margin: 12px 0;
       font-size: 14px;
-    }
-    .help-text ul {
-      margin: 8px 0;
-      padding-left: 20px;
-    }
-    .help-text li {
-      margin-bottom: 4px;
     }
     
     .date-format-info {
@@ -167,19 +151,6 @@
       min-width: 250px;
     }
     
-    .filter-controls {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-    }
-    
-    .column-filter {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
     .highlight {
       background-color: #fff3cd !important;
     }
@@ -202,12 +173,6 @@
       background: var(--primary-color);
       color: white;
     }
-    
-    .export-options {
-      display: flex;
-      gap: 12px;
-      margin-top: 20px;
-    }
   </style>
 </head>
 <body>
@@ -219,6 +184,12 @@
 
   <div id="authCard" class="card">
     <div id="auth-message" class="info-message">Authenticating with Genesys Cloud...</div>
+    <div id="auth-progress" style="margin-top: 12px; text-align: center;">
+      <div class="loading">
+        <span class="spinner"></span>
+        <span>Processing authentication...</span>
+      </div>
+    </div>
   </div>
 
   <div id="appContent" style="display:none;">
@@ -231,11 +202,11 @@
         <p style="margin-top: 8px;">This app runs inside Genesys Cloud and processes files locally in your browser.</p>
       </div>
       <div class="help-text">
-        <strong>Features:</strong>
+        <strong>CSV Viewer Features:</strong>
         <ul>
           <li>View CSV data in a sortable, searchable table</li>
-          <li>Filter data by column values</li>
-          <li>Download data as JSON or filtered CSV</li>
+          <li>Pagination for large datasets</li>
+          <li>Highlight search results</li>
           <li>All processing happens locally - no data sent to external servers</li>
         </ul>
       </div>
@@ -250,30 +221,25 @@
     </div>
 
     <div id="dataStats" class="card" style="display:none;">
-      <h2 class="section-title">Data Statistics</h2>
+      <h2 class="section-title">File Statistics</h2>
       <div class="stats-container" id="statsContainer">
         <!-- Stats will be populated here -->
       </div>
     </div>
 
     <div id="dataControls" class="card" style="display:none;">
-      <h2 class="section-title">Data Controls</h2>
+      <h2 class="section-title">Table Controls</h2>
       <div class="controls-bar">
         <input type="text" id="searchInput" class="search-box" placeholder="Search in all columns...">
         <div>
-          <button id="exportJsonBtn">Export as JSON</button>
-          <button id="exportCsvBtn">Export as CSV</button>
+          <button id="exportCsvBtn">Export Filtered CSV</button>
           <button id="clearDataBtn" style="background: #dc3545;">Clear Data</button>
         </div>
-      </div>
-      
-      <div class="filter-controls" id="columnFilters">
-        <!-- Column filters will be dynamically added here -->
       </div>
     </div>
 
     <div id="dataTableCard" class="card" style="display:none;">
-      <h2 class="section-title">Data Table</h2>
+      <h2 class="section-title">CSV Data Table</h2>
       <div class="muted" style="margin-bottom: 12px;" id="tableInfo">
         <!-- Table info will be displayed here -->
       </div>
@@ -285,16 +251,6 @@
       
       <div class="pagination" id="paginationControls" style="display:none;">
         <!-- Pagination controls will be added here -->
-      </div>
-    </div>
-
-    <div id="jsonPreviewCard" class="card" style="display:none;">
-      <h2 class="section-title">JSON Preview</h2>
-      <div class="muted" style="margin-bottom: 12px;">Preview of the data as JSON (first 10 rows):</div>
-      <div id="jsonPreview" class="json-preview"></div>
-      <div class="export-options">
-        <button id="copyJsonBtn">Copy JSON to Clipboard</button>
-        <button id="downloadJsonBtn">Download Full JSON</button>
       </div>
     </div>
   </div>
@@ -317,34 +273,63 @@
     let currentPage = 1;
     const rowsPerPage = 50;
 
-    // ===== Auth bootstrap =====
+    // ===== Improved OAuth Handling =====
     document.addEventListener('DOMContentLoaded', () => {
+      // Check if we're coming back from OAuth with an error or token
       const hash = window.location.hash.substring(1);
       const params = new URLSearchParams(hash);
-      const qparams = new URLSearchParams(window.location.search);
-
-      const oauthError = params.get('error') || qparams.get('error');
-      const oauthErrorDesc = params.get('error_description') || qparams.get('error_description');
+      
+      // Also check query parameters (some OAuth flows use these)
+      const searchParams = new URLSearchParams(window.location.search);
+      
+      // Combine both hash and query params
+      const allParams = new URLSearchParams(hash + '&' + searchParams.toString());
+      
+      const oauthError = allParams.get('error') || params.get('error') || searchParams.get('error');
+      const oauthErrorDesc = allParams.get('error_description') || params.get('error_description') || searchParams.get('error_description');
 
       if (oauthError) {
         document.getElementById('auth-message').textContent = `OAuth error: ${oauthErrorDesc || oauthError}`;
         document.getElementById('auth-message').className = 'error-message';
+        document.getElementById('auth-progress').innerHTML = '';
         console.error('OAuth error details:', { error: oauthError, description: oauthErrorDesc });
+        
+        // Add retry button
+        const retryBtn = document.createElement('button');
+        retryBtn.textContent = 'Retry Authentication';
+        retryBtn.style.marginTop = '12px';
+        retryBtn.onclick = () => window.location.href = oauthUrl;
+        document.getElementById('auth-progress').appendChild(retryBtn);
         return;
       }
       
-      accessToken = params.get('access_token');
-
+      // Try to get token from hash first, then from query params
+      accessToken = params.get('access_token') || searchParams.get('access_token');
+      
       if (accessToken) {
+        // Store token and clean URL
         sessionStorage.setItem('purecloud_token', accessToken);
-        window.location.hash = '';
+        
+        // Clean the URL - remove OAuth parameters
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+        
+        console.log('Authentication successful, token received');
         initializeApplication();
       } else if (sessionStorage.getItem('purecloud_token')) {
+        // Use stored token
         accessToken = sessionStorage.getItem('purecloud_token');
+        console.log('Using stored token');
         initializeApplication();
       } else {
-        console.log('Initiating OAuth flow with:', { clientId, redirectUri });
-        window.location.href = oauthUrl;
+        // No token found, start OAuth flow
+        console.log('No authentication token found, initiating OAuth flow...');
+        console.log('Redirecting to:', oauthUrl);
+        
+        // Small delay to show loading message
+        setTimeout(() => {
+          window.location.href = oauthUrl;
+        }, 1000);
       }
     });
     
@@ -356,15 +341,25 @@
     }
     
     function initializeApplication() {
+      console.log('Initializing application...');
+      
+      // Hide auth progress spinner
+      document.getElementById('auth-progress').innerHTML = '';
+      
       document.getElementById('auth-message').textContent = 'Authenticated with Genesys Cloud successfully!';
-      document.getElementById('authCard').style.display = 'none';
-      document.getElementById('appContent').style.display = 'block';
+      document.getElementById('auth-message').className = 'success-message';
       
-      // Setup event listeners
-      setupEventListeners();
-      
-      // Display welcome message
-      showMessage('Welcome! You are authenticated with Genesys Cloud. Upload a CSV file to begin.', 'success');
+      // Small delay before showing app content for smoother transition
+      setTimeout(() => {
+        document.getElementById('authCard').style.display = 'none';
+        document.getElementById('appContent').style.display = 'block';
+        
+        // Setup event listeners
+        setupEventListeners();
+        
+        // Display welcome message
+        showMessage('Welcome! You are authenticated with Genesys Cloud. Upload a CSV file to begin.', 'success');
+      }, 500);
     }
     
     function setupEventListeners() {
@@ -401,11 +396,11 @@
       });
       
       // Export buttons
-      document.getElementById('exportJsonBtn').addEventListener('click', exportAsJson);
       document.getElementById('exportCsvBtn').addEventListener('click', exportAsCsv);
       document.getElementById('clearDataBtn').addEventListener('click', clearData);
-      document.getElementById('copyJsonBtn').addEventListener('click', copyJsonToClipboard);
-      document.getElementById('downloadJsonBtn').addEventListener('click', downloadJson);
+      
+      // Search input
+      document.getElementById('searchInput').addEventListener('input', applySearch);
     }
     
     // Handle file selection
@@ -498,25 +493,19 @@
         
         console.log(`Parsed ${csvData.length} rows from CSV with ${currentHeaders.length} columns`);
         
-        // Initialize filtered data
+        // Initialize filtered data (starts as all data)
         filteredData = [...csvData];
         
         // Show data
         showDataStats();
-        createColumnFilters();
         renderTable();
-        showJsonPreview();
         
         // Show data sections
         document.getElementById('dataStats').style.display = 'block';
         document.getElementById('dataControls').style.display = 'block';
         document.getElementById('dataTableCard').style.display = 'block';
-        document.getElementById('jsonPreviewCard').style.display = 'block';
         
         showMessage(`Successfully loaded ${csvData.length} rows from CSV`, 'success');
-        
-        // Setup search functionality
-        setupSearch();
         
       } catch (error) {
         console.error('Error parsing CSV:', error);
@@ -606,70 +595,25 @@
       });
     }
     
-    // Create column filters
-    function createColumnFilters() {
-      const columnFilters = document.getElementById('columnFilters');
-      columnFilters.innerHTML = '';
-      
-      currentHeaders.forEach(header => {
-        const filterDiv = document.createElement('div');
-        filterDiv.className = 'column-filter';
-        filterDiv.innerHTML = `
-          <label for="filter-${header}" style="font-size: 12px;">${header}:</label>
-          <input type="text" 
-                 id="filter-${header}" 
-                 class="column-filter-input" 
-                 placeholder="Filter ${header}..."
-                 data-column="${header}">
-        `;
-        columnFilters.appendChild(filterDiv);
-      });
-      
-      // Add event listeners to filter inputs
-      document.querySelectorAll('.column-filter-input').forEach(input => {
-        input.addEventListener('input', applyFilters);
-      });
-    }
-    
-    // Setup search functionality
-    function setupSearch() {
-      const searchInput = document.getElementById('searchInput');
-      searchInput.addEventListener('input', applyFilters);
-    }
-    
-    // Apply all filters and search
-    function applyFilters() {
+    // Apply search filter
+    function applySearch() {
       const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-      const filterInputs = document.querySelectorAll('.column-filter-input');
       
-      filteredData = csvData.filter(row => {
-        // Apply global search
-        if (searchTerm) {
-          const rowValues = Object.values(row).join(' ').toLowerCase();
-          if (!rowValues.includes(searchTerm)) {
-            return false;
-          }
-        }
-        
-        // Apply column-specific filters
-        for (const input of filterInputs) {
-          const column = input.dataset.column;
-          const filterValue = input.value.toLowerCase();
-          
-          if (filterValue && row[column]) {
-            const cellValue = row[column].toString().toLowerCase();
-            if (!cellValue.includes(filterValue)) {
-              return false;
-            }
-          }
-        }
-        
-        return true;
-      });
+      if (!searchTerm.trim()) {
+        // If search is empty, show all data
+        filteredData = [...csvData];
+      } else {
+        // Filter data based on search term
+        filteredData = csvData.filter(row => {
+          // Check if search term exists in any column value
+          return Object.values(row).some(value => 
+            value && value.toString().toLowerCase().includes(searchTerm)
+          );
+        });
+      }
       
       currentPage = 1;
       renderTable();
-      showJsonPreview();
     }
     
     // Render table with pagination
@@ -682,13 +626,16 @@
       table.innerHTML = '';
       
       // Update table info
-      tableInfo.textContent = `Showing ${filteredData.length} rows (${csvData.length} total). `;
-      if (filteredData.length < csvData.length) {
-        tableInfo.textContent += `${csvData.length - filteredData.length} rows filtered out.`;
+      const searchTerm = document.getElementById('searchInput').value;
+      if (searchTerm) {
+        tableInfo.textContent = `Showing ${filteredData.length} filtered rows (${csvData.length} total). Search: "${searchTerm}"`;
+      } else {
+        tableInfo.textContent = `Showing ${csvData.length} rows`;
       }
       
       if (filteredData.length === 0) {
-        table.innerHTML = '<tr><td colspan="' + currentHeaders.length + '" style="text-align: center; padding: 40px;">No data matches your filters</td></tr>';
+        table.innerHTML = '<tr><td colspan="' + currentHeaders.length + '" style="text-align: center; padding: 40px;">' + 
+          (searchTerm ? 'No data matches your search' : 'No data available') + '</td></tr>';
         paginationControls.style.display = 'none';
         return;
       }
@@ -716,7 +663,6 @@
       
       // Create table body
       const tbody = document.createElement('tbody');
-      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
       
       pageData.forEach((row, rowIndex) => {
         const tr = document.createElement('tr');
@@ -726,6 +672,7 @@
           let cellValue = row[header] || '';
           
           // Highlight search matches
+          const searchTerm = document.getElementById('searchInput').value.toLowerCase();
           if (searchTerm && cellValue.toLowerCase().includes(searchTerm)) {
             td.innerHTML = highlightText(cellValue, searchTerm);
             td.classList.add('highlight');
@@ -862,31 +809,6 @@
       renderTable();
     }
     
-    // Show JSON preview
-    function showJsonPreview() {
-      const jsonPreview = document.getElementById('jsonPreview');
-      
-      // Create preview with first 10 rows
-      const previewData = filteredData.slice(0, 10);
-      
-      jsonPreview.textContent = JSON.stringify(previewData, null, 2);
-    }
-    
-    // Export as JSON
-    function exportAsJson() {
-      const dataStr = JSON.stringify(filteredData, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'exported_data.json';
-      link.click();
-      
-      URL.revokeObjectURL(url);
-      showMessage('JSON file downloaded successfully!', 'success');
-    }
-    
     // Export as CSV
     function exportAsCsv() {
       if (filteredData.length === 0) {
@@ -932,31 +854,14 @@
         document.getElementById('fileName').textContent = '';
         document.getElementById('fileUploadArea').classList.remove('has-file');
         document.getElementById('fileInput').value = '';
+        document.getElementById('searchInput').value = '';
         document.getElementById('dataStats').style.display = 'none';
         document.getElementById('dataControls').style.display = 'none';
         document.getElementById('dataTableCard').style.display = 'none';
-        document.getElementById('jsonPreviewCard').style.display = 'none';
         document.getElementById('csvTable').innerHTML = '';
-        document.getElementById('jsonPreview').textContent = '';
         
         showMessage('All data cleared', 'success');
       }
-    }
-    
-    // Copy JSON to clipboard
-    function copyJsonToClipboard() {
-      const jsonStr = JSON.stringify(filteredData, null, 2);
-      
-      navigator.clipboard.writeText(jsonStr).then(() => {
-        showMessage('JSON copied to clipboard!', 'success');
-      }).catch(err => {
-        showMessage('Failed to copy JSON: ' + err.message, 'error');
-      });
-    }
-    
-    // Download full JSON
-    function downloadJson() {
-      exportAsJson();
     }
   </script>
 </body>
