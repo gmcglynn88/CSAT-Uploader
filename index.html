@@ -83,136 +83,75 @@
       font-size: 14px;
     }
     
-    .controls-bar {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 16px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    
-    .search-box {
-      flex: 1;
-      min-width: 250px;
-    }
-    
-    /* WFM Helper Style Table */
-    .schedule-table {
+    /* Simple Excel-like table */
+    .excel-table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 16px;
-      font-size: 13px;
-    }
-    
-    .schedule-table th,
-    .schedule-table td {
-      border: 1px solid var(--border-color);
-      padding: 8px;
-      text-align: left;
-    }
-    
-    .schedule-table th {
-      background: var(--light-bg);
-      text-align: left;
-      cursor: pointer;
-      position: relative;
-      font-weight: 600;
-      color: var(--text-color);
-    }
-    
-    .schedule-table th.sortable:hover {
-      background: #e9ecef;
-    }
-    
-    .schedule-table tr:nth-child(even) {
-      background: #fafafa;
-    }
-    
-    .schedule-table tr:hover {
-      background: #f0f7f4;
-    }
-    
-    .table-wrapper {
-      max-height: 600px;
-      overflow: auto;
-      margin-top: 16px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-    }
-    
-    .table-meta {
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--text-light);
-    }
-    
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: var(--pill);
-      font-size: 11px;
-      color: var(--secondary-color);
-      margin-right: 8px;
-    }
-    
-    .highlight {
-      background-color: #fff3cd !important;
-    }
-    
-    .pagination {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
       margin-top: 20px;
-    }
-    
-    .pagination button {
-      padding: 6px 12px;
+      font-size: 14px;
       background: white;
-      color: var(--text-color);
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,.1);
     }
     
-    .pagination button:hover {
+    .excel-table th {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: #2c3e50;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      white-space: nowrap;
+    }
+    
+    .excel-table td {
+      border: 1px solid #dee2e6;
+      padding: 10px 16px;
+      color: #495057;
+      vertical-align: top;
+    }
+    
+    .excel-table tr:nth-child(even) {
       background: #f8f9fa;
     }
     
-    .pagination button.active {
+    .excel-table tr:hover {
+      background: #e9f6f0;
+    }
+    
+    .table-container {
+      max-height: 600px;
+      overflow: auto;
+      margin-top: 16px;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+    }
+    
+    .table-stats {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #6c757d;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .stat-badge {
       background: var(--primary-color);
       color: white;
-      border-color: var(--primary-color);
-    }
-    
-    .pagination button:disabled {
-      background: #e9ecef;
-      color: #6c757d;
-      cursor: not-allowed;
-    }
-    
-    .sort-indicator {
-      margin-left: 4px;
-      font-size: 12px;
-      color: #94a3b8;
-    }
-    
-    .table-controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 16px 0;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    
-    .sort-controls {
-      display: flex;
-      gap: 10px;
-      align-items: center;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
     }
   </style>
 </head>
@@ -239,16 +178,15 @@
     <div class="card">
       <h2 class="section-title">Upload CSV File</h2>
       <div class="date-format-info">
-        <strong>📁 Upload any CSV file to view its contents in a table format.</strong>
+        <strong>📁 Upload any CSV file to view its contents in a clean, Excel-like table.</strong>
         <p style="margin-top: 8px;">This app runs inside Genesys Cloud and processes files locally in your browser.</p>
       </div>
       <div class="help-text">
-        <strong>Features:</strong>
+        <strong>Simple CSV Viewer:</strong>
         <ul>
-          <li>View CSV data in a clean, sortable table</li>
-          <li>Search across all columns</li>
-          <li>Pagination for large datasets</li>
-          <li>Export data as CSV</li>
+          <li>Upload CSV files and view as a clean table</li>
+          <li>No complex sorting or filtering - just clean data display</li>
+          <li>Export back to CSV if needed</li>
           <li>All processing happens locally - no data sent to external servers</li>
         </ul>
       </div>
@@ -260,45 +198,20 @@
       </div>
       <input type="file" id="fileInput" accept=".csv" style="display:none" />
       <div id="fileName" class="file-name"></div>
-    </div>
-
-    <div id="dataControls" class="card" style="display:none;">
-      <h2 class="section-title">Table Controls</h2>
-      <div class="controls-bar">
-        <input type="text" id="searchInput" class="search-box" placeholder="Search in all columns...">
-        <div>
-          <button id="exportCsvBtn">Export as CSV</button>
-          <button id="clearDataBtn" style="background: #dc3545;">Clear Data</button>
-        </div>
-      </div>
       
-      <div class="table-controls">
-        <div class="sort-controls">
-          <label for="tableSort">Sort by:</label>
-          <select id="tableSort">
-            <!-- Will be populated dynamically with column headers -->
-          </select>
-          <select id="tableSortOrder">
-            <option value="asc">Ascending</option>
-            <option value="desc">Descending</option>
-          </select>
-        </div>
+      <div style="margin-top: 16px; display: flex; gap: 12px;">
+        <button id="exportCsvBtn" style="display:none;">Export Table as CSV</button>
+        <button id="clearDataBtn" style="background: #dc3545; display:none;">Clear Table</button>
       </div>
     </div>
 
     <div id="dataTableCard" class="card" style="display:none;">
       <h2 class="section-title">CSV Data Table</h2>
-      <div class="table-meta" id="tableInfo">
-        <!-- Table info will be displayed here -->
+      <div class="table-stats" id="tableStats">
+        <!-- Table stats will be displayed here -->
       </div>
-      <div class="table-wrapper">
-        <table id="csvTable" class="schedule-table">
-          <!-- Table will be rendered here -->
-        </table>
-      </div>
-      
-      <div class="pagination" id="paginationControls" style="display:none;">
-        <!-- Pagination controls will be added here -->
+      <div class="table-container" id="tableContainer">
+        <!-- Table will be rendered here -->
       </div>
     </div>
   </div>
@@ -316,10 +229,7 @@
 
     let accessToken = null;
     let csvData = [];
-    let filteredData = [];
     let currentHeaders = [];
-    let currentPage = 1;
-    const rowsPerPage = 50;
 
     // ===== Improved OAuth Handling =====
     document.addEventListener('DOMContentLoaded', () => {
@@ -443,17 +353,11 @@
         uploadArea.style.background = 'var(--light-bg)';
       });
       
-      // Export buttons
+      // Export button
       document.getElementById('exportCsvBtn').addEventListener('click', exportAsCsv);
+      
+      // Clear button
       document.getElementById('clearDataBtn').addEventListener('click', clearData);
-      
-      // Search input
-      document.getElementById('searchInput').addEventListener('input', applySearch);
-      
-      // Sort controls
-      document.getElementById('tableSortOrder').addEventListener('change', () => {
-        applyTableSorting();
-      });
     }
     
     // Handle file selection
@@ -481,6 +385,10 @@
       document.getElementById('fileName').textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
       document.getElementById('fileUploadArea').classList.add('has-file');
       
+      // Show export button
+      document.getElementById('exportCsvBtn').style.display = 'inline-block';
+      document.getElementById('clearDataBtn').style.display = 'inline-block';
+      
       // Read and process CSV
       readCSVFile(file);
     }
@@ -501,17 +409,13 @@
       reader.readAsText(file, 'UTF-8');
     }
     
-    // Parse CSV data using the same logic as WFM Helper
+    // Parse CSV data
     function parseCSV(csvText) {
       try {
-        // Handle different line endings
-        const lines = csvText.split(/\r\n|\n|\r/);
-        if (lines.length === 0) {
-          showMessage('CSV file is empty', 'error');
-          return;
-        }
+        // Reset data
+        csvData = [];
         
-        // Parse the CSV using proper CSV parsing (handles quoted values with commas)
+        // Parse CSV using proper CSV parsing logic
         const rows = parseCSVText(csvText);
         
         if (rows.length === 0) {
@@ -523,8 +427,6 @@
         currentHeaders = rows[0].map(h => h.trim().replace(/^"|"$/g, ''));
         
         // Process data rows
-        csvData = [];
-        
         for (let i = 1; i < rows.length; i++) {
           const rowValues = rows[i];
           const row = {};
@@ -548,20 +450,13 @@
         
         console.log(`Parsed ${csvData.length} rows from CSV with ${currentHeaders.length} columns`);
         
-        // Initialize filtered data (starts as all data)
-        filteredData = [...csvData];
-        
         // Show data
         renderTable();
         
-        // Show data sections
-        document.getElementById('dataControls').style.display = 'block';
+        // Show data section
         document.getElementById('dataTableCard').style.display = 'block';
         
         showMessage(`Successfully loaded ${csvData.length} rows from CSV`, 'success');
-        
-        // Initialize sort dropdown
-        initializeSortDropdown();
         
       } catch (error) {
         console.error('Error parsing CSV:', error);
@@ -569,7 +464,7 @@
       }
     }
     
-    // Proper CSV parser that handles quoted values with commas (same as WFM Helper)
+    // Proper CSV parser that handles quoted values with commas and line breaks
     function parseCSVText(text) {
       const rows = [];
       let currentRow = [];
@@ -614,163 +509,71 @@
       return rows;
     }
     
-    // Initialize sort dropdown with column headers
-    function initializeSortDropdown() {
-      const sortSelect = document.getElementById('tableSort');
-      sortSelect.innerHTML = '<option value="">Select column to sort...</option>';
-      
-      currentHeaders.forEach((header, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = header;
-        sortSelect.appendChild(option);
-      });
-      
-      sortSelect.addEventListener('change', () => {
-        applyTableSorting();
-      });
-    }
-    
-    // Apply search filter
-    function applySearch() {
-      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-      
-      if (!searchTerm.trim()) {
-        // If search is empty, show all data
-        filteredData = [...csvData];
-      } else {
-        // Filter data based on search term
-        filteredData = csvData.filter(row => {
-          // Check if search term exists in any column value
-          return Object.values(row).some(value => 
-            value && value.toString().toLowerCase().includes(searchTerm)
-          );
-        });
-      }
-      
-      currentPage = 1;
-      renderTable();
-    }
-    
-    // Apply table sorting
-    function applyTableSorting() {
-      const sortColumnIndex = parseInt(document.getElementById('tableSort').value);
-      const sortOrder = document.getElementById('tableSortOrder').value;
-      
-      if (isNaN(sortColumnIndex)) {
-        // No column selected, don't sort
-        filteredData = [...filteredData];
-      } else {
-        const header = currentHeaders[sortColumnIndex];
-        
-        filteredData.sort((a, b) => {
-          let aVal = a[header] || '';
-          let bVal = b[header] || '';
-          
-          // Try numeric comparison first
-          const numA = parseFloat(aVal);
-          const numB = parseFloat(bVal);
-          
-          if (!isNaN(numA) && !isNaN(numB)) {
-            return sortOrder === 'asc' ? numA - numB : numB - numA;
-          }
-          
-          // Fall back to string comparison
-          if (sortOrder === 'asc') {
-            return aVal.toString().localeCompare(bVal.toString());
-          } else {
-            return bVal.toString().localeCompare(aVal.toString());
-          }
-        });
-      }
-      
-      renderTable();
-    }
-    
-    // Render table with pagination (using WFM Helper styling)
+    // Render Excel-like table
     function renderTable() {
-      const table = document.getElementById('csvTable');
-      const tableInfo = document.getElementById('tableInfo');
-      const paginationControls = document.getElementById('paginationControls');
+      const tableContainer = document.getElementById('tableContainer');
+      const tableStats = document.getElementById('tableStats');
       
-      // Clear table
-      table.innerHTML = '';
+      // Clear container
+      tableContainer.innerHTML = '';
       
-      // Update table info
-      const searchTerm = document.getElementById('searchInput').value;
-      if (searchTerm) {
-        tableInfo.innerHTML = `
-          <span class="pill">Showing ${filteredData.length} filtered rows (${csvData.length} total)</span>
-          <span class="pill">Search: "${searchTerm}"</span>
+      // Update table stats
+      tableStats.innerHTML = `
+        <div class="stat-item">
+          <span>Rows:</span>
+          <span class="stat-badge">${csvData.length}</span>
+        </div>
+        <div class="stat-item">
+          <span>Columns:</span>
+          <span class="stat-badge">${currentHeaders.length}</span>
+        </div>
+        <div class="stat-item">
+          <span>File:</span>
+          <span>${document.getElementById('fileName').textContent}</span>
+        </div>
+      `;
+      
+      if (csvData.length === 0) {
+        tableContainer.innerHTML = `
+          <div style="text-align: center; padding: 40px; color: #6c757d;">
+            No data available. Upload a CSV file to see the table.
+          </div>
         `;
-      } else {
-        tableInfo.innerHTML = `<span class="pill">Showing ${csvData.length} rows</span>`;
-      }
-      
-      if (filteredData.length === 0) {
-        table.innerHTML = '<tr><td colspan="' + currentHeaders.length + '" style="text-align: center; padding: 40px;">' + 
-          (searchTerm ? 'No data matches your search' : 'No data available') + '</td></tr>';
-        paginationControls.style.display = 'none';
         return;
       }
+      
+      // Create table
+      const table = document.createElement('table');
+      table.className = 'excel-table';
       
       // Create header row
       const thead = document.createElement('thead');
       const headerRow = document.createElement('tr');
       
-      currentHeaders.forEach((header, index) => {
+      currentHeaders.forEach(header => {
         const th = document.createElement('th');
-        th.className = 'sortable';
         th.textContent = header;
-        th.dataset.column = index;
-        
-        th.addEventListener('click', () => {
-          const sortSelect = document.getElementById('tableSort');
-          const currentSortIndex = parseInt(sortSelect.value);
-          
-          if (currentSortIndex === index) {
-            // Toggle sort order
-            const sortOrder = document.getElementById('tableSortOrder');
-            sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
-          } else {
-            // Change sort column
-            sortSelect.value = index;
-          }
-          
-          applyTableSorting();
-        });
-        
         headerRow.appendChild(th);
       });
       thead.appendChild(headerRow);
       table.appendChild(thead);
       
-      // Calculate pagination
-      const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-      const startIndex = (currentPage - 1) * rowsPerPage;
-      const endIndex = Math.min(startIndex + rowsPerPage, filteredData.length);
-      const pageData = filteredData.slice(startIndex, endIndex);
-      
       // Create table body
       const tbody = document.createElement('tbody');
       
-      pageData.forEach((row) => {
+      csvData.forEach((row, rowIndex) => {
         const tr = document.createElement('tr');
         
         currentHeaders.forEach(header => {
           const td = document.createElement('td');
-          let cellValue = row[header] || '';
+          const cellValue = row[header] || '';
+          td.textContent = cellValue;
           
-          // Highlight search matches
-          const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-          if (searchTerm && cellValue.toLowerCase().includes(searchTerm)) {
-            td.innerHTML = highlightText(cellValue, searchTerm);
-            td.classList.add('highlight');
-          } else {
-            td.textContent = cellValue;
+          // Add title for hover if cell content is long
+          if (cellValue.length > 50) {
+            td.title = cellValue;
           }
           
-          td.title = cellValue;
           tr.appendChild(td);
         });
         
@@ -778,109 +581,12 @@
       });
       
       table.appendChild(tbody);
-      
-      // Show pagination if needed
-      if (totalPages > 1) {
-        renderPagination(totalPages);
-        paginationControls.style.display = 'flex';
-      } else {
-        paginationControls.style.display = 'none';
-      }
-    }
-    
-    // Highlight search matches in text
-    function highlightText(text, searchTerm) {
-      const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-      return text.replace(regex, '<mark>$1</mark>');
-    }
-    
-    // Render pagination controls
-    function renderPagination(totalPages) {
-      const paginationControls = document.getElementById('paginationControls');
-      paginationControls.innerHTML = '';
-      
-      // Previous button
-      const prevButton = document.createElement('button');
-      prevButton.textContent = '←';
-      prevButton.disabled = currentPage === 1;
-      prevButton.addEventListener('click', () => {
-        if (currentPage > 1) {
-          currentPage--;
-          renderTable();
-        }
-      });
-      paginationControls.appendChild(prevButton);
-      
-      // Page numbers
-      const maxVisiblePages = 5;
-      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-      
-      if (endPage - startPage + 1 < maxVisiblePages) {
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-      }
-      
-      if (startPage > 1) {
-        const firstButton = document.createElement('button');
-        firstButton.textContent = '1';
-        firstButton.addEventListener('click', () => {
-          currentPage = 1;
-          renderTable();
-        });
-        paginationControls.appendChild(firstButton);
-        
-        if (startPage > 2) {
-          const ellipsis = document.createElement('span');
-          ellipsis.textContent = '...';
-          paginationControls.appendChild(ellipsis);
-        }
-      }
-      
-      for (let i = startPage; i <= endPage; i++) {
-        const pageButton = document.createElement('button');
-        pageButton.textContent = i;
-        if (i === currentPage) {
-          pageButton.classList.add('active');
-        }
-        pageButton.addEventListener('click', () => {
-          currentPage = i;
-          renderTable();
-        });
-        paginationControls.appendChild(pageButton);
-      }
-      
-      if (endPage < totalPages) {
-        if (endPage < totalPages - 1) {
-          const ellipsis = document.createElement('span');
-          ellipsis.textContent = '...';
-          paginationControls.appendChild(ellipsis);
-        }
-        
-        const lastButton = document.createElement('button');
-        lastButton.textContent = totalPages;
-        lastButton.addEventListener('click', () => {
-          currentPage = totalPages;
-          renderTable();
-        });
-        paginationControls.appendChild(lastButton);
-      }
-      
-      // Next button
-      const nextButton = document.createElement('button');
-      nextButton.textContent = '→';
-      nextButton.disabled = currentPage === totalPages;
-      nextButton.addEventListener('click', () => {
-        if (currentPage < totalPages) {
-          currentPage++;
-          renderTable();
-        }
-      });
-      paginationControls.appendChild(nextButton);
+      tableContainer.appendChild(table);
     }
     
     // Export as CSV
     function exportAsCsv() {
-      if (filteredData.length === 0) {
+      if (csvData.length === 0) {
         showMessage('No data to export', 'error');
         return;
       }
@@ -888,7 +594,7 @@
       // Create CSV content
       let csvContent = currentHeaders.map(h => `"${h.replace(/"/g, '""')}"`).join(',') + '\n';
       
-      filteredData.forEach(row => {
+      csvData.forEach(row => {
         const rowValues = currentHeaders.map(header => {
           const value = row[header] || '';
           // Escape quotes
@@ -912,20 +618,17 @@
     function clearData() {
       if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
         csvData = [];
-        filteredData = [];
         currentHeaders = [];
-        currentPage = 1;
         
         // Reset UI
         document.getElementById('fileName').textContent = '';
         document.getElementById('fileUploadArea').classList.remove('has-file');
         document.getElementById('fileInput').value = '';
-        document.getElementById('searchInput').value = '';
-        document.getElementById('tableSort').innerHTML = '<option value="">Select column to sort...</option>';
-        document.getElementById('dataControls').style.display = 'none';
+        document.getElementById('exportCsvBtn').style.display = 'none';
+        document.getElementById('clearDataBtn').style.display = 'none';
         document.getElementById('dataTableCard').style.display = 'none';
-        document.getElementById('csvTable').innerHTML = '';
-        document.getElementById('tableInfo').innerHTML = '';
+        document.getElementById('tableContainer').innerHTML = '';
+        document.getElementById('tableStats').innerHTML = '';
         
         showMessage('All data cleared', 'success');
       }
