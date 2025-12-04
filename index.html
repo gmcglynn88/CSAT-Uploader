@@ -60,79 +60,6 @@
       font-weight:600;
       color:var(--primary-color);
     }
-
-    /* Excel-like table styling */
-    .table-wrapper {
-      max-height: 600px;
-      overflow: auto;
-      margin-top: 16px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      background: white;
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
-      min-width: 100%;
-    }
-    
-    th, td {
-      border: 1px solid #e2e8f0;
-      padding: 8px 12px;
-      text-align: left;
-      vertical-align: middle;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-size: 14px;
-    }
-    
-    th {
-      background: #f8fafc;
-      font-weight: 600;
-      color: #475569;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      border-bottom: 2px solid #e2e8f0;
-      user-select: none;
-    }
-    
-    td {
-      background: white;
-      color: #334155;
-    }
-    
-    tr:nth-child(even) td {
-      background: #f8fafc;
-    }
-    
-    tr:hover td {
-      background: #f1f5f9;
-    }
-    
-    /* Column resizing */
-    th {
-      position: relative;
-      padding-right: 24px;
-    }
-    
-    .resize-handle {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 4px;
-      height: 100%;
-      cursor: col-resize;
-      background: transparent;
-      transition: background 0.2s;
-    }
-    
-    .resize-handle:hover {
-      background: var(--primary-color);
-    }
     
     /* Loading spinner */
     .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-in-out infinite; }
@@ -156,30 +83,6 @@
       font-size: 14px;
     }
     
-    .stats-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin: 20px 0;
-    }
-    .stat-card {
-      background: white;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 16px;
-      text-align: center;
-    }
-    .stat-value {
-      font-size: 24px;
-      font-weight: bold;
-      color: var(--primary-color);
-    }
-    .stat-label {
-      font-size: 14px;
-      color: var(--text-light);
-      margin-top: 4px;
-    }
-    
     .controls-bar {
       display: flex;
       gap: 12px;
@@ -191,6 +94,67 @@
     .search-box {
       flex: 1;
       min-width: 250px;
+    }
+    
+    /* WFM Helper Style Table */
+    .schedule-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      font-size: 13px;
+    }
+    
+    .schedule-table th,
+    .schedule-table td {
+      border: 1px solid var(--border-color);
+      padding: 8px;
+      text-align: left;
+    }
+    
+    .schedule-table th {
+      background: var(--light-bg);
+      text-align: left;
+      cursor: pointer;
+      position: relative;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+    
+    .schedule-table th.sortable:hover {
+      background: #e9ecef;
+    }
+    
+    .schedule-table tr:nth-child(even) {
+      background: #fafafa;
+    }
+    
+    .schedule-table tr:hover {
+      background: #f0f7f4;
+    }
+    
+    .table-wrapper {
+      max-height: 600px;
+      overflow: auto;
+      margin-top: 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+    }
+    
+    .table-meta {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--pill);
+      font-size: 11px;
+      color: var(--secondary-color);
+      margin-right: 8px;
     }
     
     .highlight {
@@ -209,35 +173,25 @@
       padding: 6px 12px;
       background: white;
       color: var(--text-color);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    
+    .pagination button:hover {
+      background: #f8f9fa;
     }
     
     .pagination button.active {
       background: var(--primary-color);
       color: white;
+      border-color: var(--primary-color);
     }
     
-    /* Excel-like cell formatting */
-    .number-cell {
-      text-align: right;
-      font-family: 'Consolas', 'Monaco', monospace;
-    }
-    
-    .date-cell {
-      text-align: center;
-      white-space: nowrap;
-    }
-    
-    .empty-cell {
-      color: #94a3b8;
-      font-style: italic;
-    }
-    
-    /* Column header actions */
-    .column-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
+    .pagination button:disabled {
+      background: #e9ecef;
+      color: #6c757d;
+      cursor: not-allowed;
     }
     
     .sort-indicator {
@@ -246,19 +200,19 @@
       color: #94a3b8;
     }
     
-    /* Tooltip for full cell content */
-    td[title]:hover::after {
-      content: attr(title);
-      position: absolute;
-      background: #1e293b;
-      color: white;
-      padding: 8px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      z-index: 1000;
-      max-width: 300px;
-      word-wrap: break-word;
-      white-space: normal;
+    .table-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 16px 0;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .sort-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
     }
   </style>
 </head>
@@ -285,18 +239,17 @@
     <div class="card">
       <h2 class="section-title">Upload CSV File</h2>
       <div class="date-format-info">
-        <strong>📁 Upload any CSV file to view its contents in an Excel-like table.</strong>
+        <strong>📁 Upload any CSV file to view its contents in a table format.</strong>
         <p style="margin-top: 8px;">This app runs inside Genesys Cloud and processes files locally in your browser.</p>
       </div>
       <div class="help-text">
-        <strong>Excel-like Table Features:</strong>
+        <strong>Features:</strong>
         <ul>
-          <li>Clean, Excel-style table formatting</li>
-          <li>Automatic column type detection (numbers, dates, text)</li>
-          <li>Column resizing (drag the right edge of column headers)</li>
-          <li>Sort by clicking column headers</li>
-          <li>Search across all data</li>
-          <li>Hover to see full cell content</li>
+          <li>View CSV data in a clean, sortable table</li>
+          <li>Search across all columns</li>
+          <li>Pagination for large datasets</li>
+          <li>Export data as CSV</li>
+          <li>All processing happens locally - no data sent to external servers</li>
         </ul>
       </div>
       <div id="fileUploadArea" class="file-upload-area">
@@ -309,13 +262,6 @@
       <div id="fileName" class="file-name"></div>
     </div>
 
-    <div id="dataStats" class="card" style="display:none;">
-      <h2 class="section-title">File Statistics</h2>
-      <div class="stats-container" id="statsContainer">
-        <!-- Stats will be populated here -->
-      </div>
-    </div>
-
     <div id="dataControls" class="card" style="display:none;">
       <h2 class="section-title">Table Controls</h2>
       <div class="controls-bar">
@@ -325,15 +271,28 @@
           <button id="clearDataBtn" style="background: #dc3545;">Clear Data</button>
         </div>
       </div>
+      
+      <div class="table-controls">
+        <div class="sort-controls">
+          <label for="tableSort">Sort by:</label>
+          <select id="tableSort">
+            <!-- Will be populated dynamically with column headers -->
+          </select>
+          <select id="tableSortOrder">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </div>
+      </div>
     </div>
 
     <div id="dataTableCard" class="card" style="display:none;">
       <h2 class="section-title">CSV Data Table</h2>
-      <div class="muted" style="margin-bottom: 12px;" id="tableInfo">
+      <div class="table-meta" id="tableInfo">
         <!-- Table info will be displayed here -->
       </div>
-      <div id="tableWrapper" class="table-wrapper">
-        <table id="csvTable">
+      <div class="table-wrapper">
+        <table id="csvTable" class="schedule-table">
           <!-- Table will be rendered here -->
         </table>
       </div>
@@ -359,11 +318,8 @@
     let csvData = [];
     let filteredData = [];
     let currentHeaders = [];
-    let columnTypes = []; // Store detected type for each column
     let currentPage = 1;
     const rowsPerPage = 50;
-    let isResizing = false;
-    let currentResizeColumn = null;
 
     // ===== Improved OAuth Handling =====
     document.addEventListener('DOMContentLoaded', () => {
@@ -493,6 +449,11 @@
       
       // Search input
       document.getElementById('searchInput').addEventListener('input', applySearch);
+      
+      // Sort controls
+      document.getElementById('tableSortOrder').addEventListener('change', () => {
+        applyTableSorting();
+      });
     }
     
     // Handle file selection
@@ -540,14 +501,17 @@
       reader.readAsText(file, 'UTF-8');
     }
     
-    // Improved CSV parser that handles quoted values, commas inside quotes, and line breaks
+    // Parse CSV data using the same logic as WFM Helper
     function parseCSV(csvText) {
       try {
-        // Reset data
-        csvData = [];
-        columnTypes = [];
+        // Handle different line endings
+        const lines = csvText.split(/\r\n|\n|\r/);
+        if (lines.length === 0) {
+          showMessage('CSV file is empty', 'error');
+          return;
+        }
         
-        // Parse CSV using proper CSV parsing logic
+        // Parse the CSV using proper CSV parsing (handles quoted values with commas)
         const rows = parseCSVText(csvText);
         
         if (rows.length === 0) {
@@ -559,6 +523,8 @@
         currentHeaders = rows[0].map(h => h.trim().replace(/^"|"$/g, ''));
         
         // Process data rows
+        csvData = [];
+        
         for (let i = 1; i < rows.length; i++) {
           const rowValues = rows[i];
           const row = {};
@@ -582,22 +548,20 @@
         
         console.log(`Parsed ${csvData.length} rows from CSV with ${currentHeaders.length} columns`);
         
-        // Detect column types
-        detectColumnTypes();
-        
         // Initialize filtered data (starts as all data)
         filteredData = [...csvData];
         
         // Show data
-        showDataStats();
         renderTable();
         
         // Show data sections
-        document.getElementById('dataStats').style.display = 'block';
         document.getElementById('dataControls').style.display = 'block';
         document.getElementById('dataTableCard').style.display = 'block';
         
         showMessage(`Successfully loaded ${csvData.length} rows from CSV`, 'success');
+        
+        // Initialize sort dropdown
+        initializeSortDropdown();
         
       } catch (error) {
         console.error('Error parsing CSV:', error);
@@ -605,7 +569,7 @@
       }
     }
     
-    // Proper CSV parser that handles quoted values with commas and line breaks
+    // Proper CSV parser that handles quoted values with commas (same as WFM Helper)
     function parseCSVText(text) {
       const rows = [];
       let currentRow = [];
@@ -650,118 +614,20 @@
       return rows;
     }
     
-    // Detect column types (number, date, text)
-    function detectColumnTypes() {
-      columnTypes = [];
+    // Initialize sort dropdown with column headers
+    function initializeSortDropdown() {
+      const sortSelect = document.getElementById('tableSort');
+      sortSelect.innerHTML = '<option value="">Select column to sort...</option>';
       
-      currentHeaders.forEach((header, colIndex) => {
-        // Sample first 100 rows to determine type
-        const sampleSize = Math.min(100, csvData.length);
-        let isNumber = true;
-        let isDate = true;
-        let nonEmptyCount = 0;
-        
-        for (let i = 0; i < sampleSize; i++) {
-          const value = csvData[i][header];
-          
-          if (value && value.trim()) {
-            nonEmptyCount++;
-            
-            // Check if it's a number
-            if (isNumber) {
-              const num = parseFloat(value.replace(/[^\d.-]/g, ''));
-              if (isNaN(num)) {
-                isNumber = false;
-              }
-            }
-            
-            // Check if it's a date (common formats)
-            if (isDate) {
-              const dateFormats = [
-                /^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD
-                /^\d{2}\/\d{2}\/\d{4}$/, // DD/MM/YYYY
-                /^\d{2}\/\d{2}\/\d{2}$/, // DD/MM/YY
-                /^\d{2}-\d{2}-\d{4}$/, // DD-MM-YYYY
-                /^\d{2}-\d{2}-\d{2}$/, // DD-MM-YY
-                /^\d{4}\/\d{2}\/\d{2}$/, // YYYY/MM/DD
-              ];
-              
-              let matchesDate = false;
-              for (const format of dateFormats) {
-                if (format.test(value)) {
-                  matchesDate = true;
-                  break;
-                }
-              }
-              
-              if (!matchesDate) {
-                isDate = false;
-              }
-            }
-          }
-        }
-        
-        // Determine final type
-        if (nonEmptyCount === 0) {
-          columnTypes.push('text'); // Default to text if no data
-        } else if (isNumber && nonEmptyCount > sampleSize * 0.7) {
-          columnTypes.push('number');
-        } else if (isDate && nonEmptyCount > sampleSize * 0.7) {
-          columnTypes.push('date');
-        } else {
-          columnTypes.push('text');
-        }
+      currentHeaders.forEach((header, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = header;
+        sortSelect.appendChild(option);
       });
       
-      console.log('Detected column types:', columnTypes);
-    }
-    
-    // Show data statistics
-    function showDataStats() {
-      const statsContainer = document.getElementById('statsContainer');
-      statsContainer.innerHTML = '';
-      
-      const stats = [
-        {
-          label: 'Total Rows',
-          value: csvData.length.toLocaleString(),
-          color: '#63AB8F'
-        },
-        {
-          label: 'Total Columns',
-          value: currentHeaders.length.toLocaleString(),
-          color: '#4A8C7D'
-        },
-        {
-          label: 'File Size',
-          value: `${(JSON.stringify(csvData).length / 1024).toFixed(1)} KB`,
-          color: '#3A7C6D'
-        }
-      ];
-      
-      // Add column type stats
-      const typeCounts = columnTypes.reduce((acc, type) => {
-        acc[type] = (acc[type] || 0) + 1;
-        return acc;
-      }, {});
-      
-      Object.entries(typeCounts).forEach(([type, count]) => {
-        stats.push({
-          label: `${type.charAt(0).toUpperCase() + type.slice(1)} Columns`,
-          value: count,
-          color: type === 'number' ? '#4299e1' : type === 'date' ? '#ed8936' : '#a0aec0'
-        });
-      });
-      
-      // Create stat cards
-      stats.forEach(stat => {
-        const statCard = document.createElement('div');
-        statCard.className = 'stat-card';
-        statCard.innerHTML = `
-          <div class="stat-value" style="color: ${stat.color}">${stat.value}</div>
-          <div class="stat-label">${stat.label}</div>
-        `;
-        statsContainer.appendChild(statCard);
+      sortSelect.addEventListener('change', () => {
+        applyTableSorting();
       });
     }
     
@@ -786,7 +652,42 @@
       renderTable();
     }
     
-    // Render Excel-like table
+    // Apply table sorting
+    function applyTableSorting() {
+      const sortColumnIndex = parseInt(document.getElementById('tableSort').value);
+      const sortOrder = document.getElementById('tableSortOrder').value;
+      
+      if (isNaN(sortColumnIndex)) {
+        // No column selected, don't sort
+        filteredData = [...filteredData];
+      } else {
+        const header = currentHeaders[sortColumnIndex];
+        
+        filteredData.sort((a, b) => {
+          let aVal = a[header] || '';
+          let bVal = b[header] || '';
+          
+          // Try numeric comparison first
+          const numA = parseFloat(aVal);
+          const numB = parseFloat(bVal);
+          
+          if (!isNaN(numA) && !isNaN(numB)) {
+            return sortOrder === 'asc' ? numA - numB : numB - numA;
+          }
+          
+          // Fall back to string comparison
+          if (sortOrder === 'asc') {
+            return aVal.toString().localeCompare(bVal.toString());
+          } else {
+            return bVal.toString().localeCompare(aVal.toString());
+          }
+        });
+      }
+      
+      renderTable();
+    }
+    
+    // Render table with pagination (using WFM Helper styling)
     function renderTable() {
       const table = document.getElementById('csvTable');
       const tableInfo = document.getElementById('tableInfo');
@@ -798,9 +699,12 @@
       // Update table info
       const searchTerm = document.getElementById('searchInput').value;
       if (searchTerm) {
-        tableInfo.textContent = `Showing ${filteredData.length} filtered rows (${csvData.length} total). Search: "${searchTerm}"`;
+        tableInfo.innerHTML = `
+          <span class="pill">Showing ${filteredData.length} filtered rows (${csvData.length} total)</span>
+          <span class="pill">Search: "${searchTerm}"</span>
+        `;
       } else {
-        tableInfo.textContent = `Showing ${csvData.length} rows`;
+        tableInfo.innerHTML = `<span class="pill">Showing ${csvData.length} rows</span>`;
       }
       
       if (filteredData.length === 0) {
@@ -810,43 +714,34 @@
         return;
       }
       
-      // Create header row with resizable columns
+      // Create header row
       const thead = document.createElement('thead');
       const headerRow = document.createElement('tr');
       
-      currentHeaders.forEach((header, colIndex) => {
+      currentHeaders.forEach((header, index) => {
         const th = document.createElement('th');
+        th.className = 'sortable';
+        th.textContent = header;
+        th.dataset.column = index;
         
-        // Create column header with sort indicator
-        const headerDiv = document.createElement('div');
-        headerDiv.className = 'column-header';
-        headerDiv.innerHTML = `
-          <span>${header}</span>
-          <span class="sort-indicator">↕️</span>
-        `;
-        
-        th.appendChild(headerDiv);
-        
-        // Add resize handle
-        const resizeHandle = document.createElement('div');
-        resizeHandle.className = 'resize-handle';
-        resizeHandle.dataset.columnIndex = colIndex;
-        
-        // Add resize event listeners
-        resizeHandle.addEventListener('mousedown', initResize);
-        th.appendChild(resizeHandle);
-        
-        // Add sort click listener
-        th.style.cursor = 'pointer';
-        th.addEventListener('click', (e) => {
-          if (!isResizing) {
-            sortTable(colIndex);
+        th.addEventListener('click', () => {
+          const sortSelect = document.getElementById('tableSort');
+          const currentSortIndex = parseInt(sortSelect.value);
+          
+          if (currentSortIndex === index) {
+            // Toggle sort order
+            const sortOrder = document.getElementById('tableSortOrder');
+            sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+          } else {
+            // Change sort column
+            sortSelect.value = index;
           }
+          
+          applyTableSorting();
         });
         
         headerRow.appendChild(th);
       });
-      
       thead.appendChild(headerRow);
       table.appendChild(thead);
       
@@ -862,45 +757,20 @@
       pageData.forEach((row) => {
         const tr = document.createElement('tr');
         
-        currentHeaders.forEach((header, colIndex) => {
+        currentHeaders.forEach(header => {
           const td = document.createElement('td');
           let cellValue = row[header] || '';
           
-          // Apply cell formatting based on detected type
-          const type = columnTypes[colIndex];
-          
-          if (!cellValue) {
-            td.className = 'empty-cell';
-            td.textContent = '(empty)';
+          // Highlight search matches
+          const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+          if (searchTerm && cellValue.toLowerCase().includes(searchTerm)) {
+            td.innerHTML = highlightText(cellValue, searchTerm);
+            td.classList.add('highlight');
           } else {
-            // Format based on type
-            if (type === 'number') {
-              td.className = 'number-cell';
-              // Try to format as number with commas
-              const num = parseFloat(cellValue.replace(/[^\d.-]/g, ''));
-              if (!isNaN(num)) {
-                td.textContent = num.toLocaleString();
-              } else {
-                td.textContent = cellValue;
-              }
-            } else if (type === 'date') {
-              td.className = 'date-cell';
-              td.textContent = cellValue;
-            } else {
-              td.textContent = cellValue;
-            }
-            
-            // Highlight search matches
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            if (searchTerm && cellValue.toLowerCase().includes(searchTerm)) {
-              td.innerHTML = highlightText(cellValue, searchTerm);
-              td.classList.add('highlight');
-            }
+            td.textContent = cellValue;
           }
           
-          // Add tooltip with full content (if truncated)
-          td.title = cellValue || '(empty)';
-          
+          td.title = cellValue;
           tr.appendChild(td);
         });
         
@@ -916,33 +786,6 @@
       } else {
         paginationControls.style.display = 'none';
       }
-    }
-    
-    // Initialize column resizing
-    function initResize(e) {
-      e.preventDefault();
-      isResizing = true;
-      currentResizeColumn = parseInt(e.target.dataset.columnIndex);
-      
-      const th = e.target.parentElement;
-      const startX = e.pageX;
-      const startWidth = th.offsetWidth;
-      
-      function doResize(e) {
-        const newWidth = startWidth + (e.pageX - startX);
-        if (newWidth > 50) { // Minimum width
-          th.style.width = `${newWidth}px`;
-        }
-      }
-      
-      function stopResize() {
-        document.removeEventListener('mousemove', doResize);
-        document.removeEventListener('mouseup', stopResize);
-        setTimeout(() => { isResizing = false; }, 100);
-      }
-      
-      document.addEventListener('mousemove', doResize);
-      document.addEventListener('mouseup', stopResize);
     }
     
     // Highlight search matches in text
@@ -1035,73 +878,6 @@
       paginationControls.appendChild(nextButton);
     }
     
-    // Sort table by column
-    function sortTable(columnIndex) {
-      const header = currentHeaders[columnIndex];
-      const type = columnTypes[columnIndex];
-      
-      filteredData.sort((a, b) => {
-        const valA = a[header] || '';
-        const valB = b[header] || '';
-        
-        if (type === 'number') {
-          const numA = parseFloat(valA.replace(/[^\d.-]/g, '')) || 0;
-          const numB = parseFloat(valB.replace(/[^\d.-]/g, '')) || 0;
-          return numA - numB;
-        } else if (type === 'date') {
-          // Try to parse dates
-          const dateA = parseDate(valA);
-          const dateB = parseDate(valB);
-          return dateA - dateB;
-        } else {
-          return valA.toString().localeCompare(valB.toString());
-        }
-      });
-      
-      renderTable();
-    }
-    
-    // Helper to parse dates
-    function parseDate(dateStr) {
-      if (!dateStr) return new Date(0);
-      
-      // Try different date formats
-      const formats = [
-        /^(\d{4})[-/](\d{2})[-/](\d{2})$/, // YYYY-MM-DD or YYYY/MM/DD
-        /^(\d{2})[-/](\d{2})[-/](\d{4})$/, // DD-MM-YYYY or DD/MM/YYYY
-        /^(\d{2})[-/](\d{2})[-/](\d{2})$/, // DD-MM-YY or DD/MM/YY
-      ];
-      
-      for (const format of formats) {
-        const match = dateStr.match(format);
-        if (match) {
-          let year, month, day;
-          
-          if (match[1].length === 4) {
-            // YYYY-MM-DD format
-            year = parseInt(match[1]);
-            month = parseInt(match[2]) - 1;
-            day = parseInt(match[3]);
-          } else if (match[3].length === 4) {
-            // DD-MM-YYYY format
-            day = parseInt(match[1]);
-            month = parseInt(match[2]) - 1;
-            year = parseInt(match[3]);
-          } else {
-            // DD-MM-YY format
-            day = parseInt(match[1]);
-            month = parseInt(match[2]) - 1;
-            year = 2000 + parseInt(match[3]);
-          }
-          
-          return new Date(year, month, day);
-        }
-      }
-      
-      // Fallback to string comparison
-      return new Date(dateStr) || new Date(0);
-    }
-    
     // Export as CSV
     function exportAsCsv() {
       if (filteredData.length === 0) {
@@ -1138,7 +914,6 @@
         csvData = [];
         filteredData = [];
         currentHeaders = [];
-        columnTypes = [];
         currentPage = 1;
         
         // Reset UI
@@ -1146,10 +921,11 @@
         document.getElementById('fileUploadArea').classList.remove('has-file');
         document.getElementById('fileInput').value = '';
         document.getElementById('searchInput').value = '';
-        document.getElementById('dataStats').style.display = 'none';
+        document.getElementById('tableSort').innerHTML = '<option value="">Select column to sort...</option>';
         document.getElementById('dataControls').style.display = 'none';
         document.getElementById('dataTableCard').style.display = 'none';
         document.getElementById('csvTable').innerHTML = '';
+        document.getElementById('tableInfo').innerHTML = '';
         
         showMessage('All data cleared', 'success');
       }
