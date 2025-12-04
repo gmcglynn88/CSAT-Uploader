@@ -10,7 +10,7 @@
     :root{
       --primary-color:#63AB8F; --secondary-color:#4A8C7D; --border-color:#DEE2E6;
       --light-bg:#F8F9FA; --card-bg:#FFFFFF; --text-color:#2C3E50; --text-light:#6C757D;
-      --pill:#e9f6f0;
+      --pill:#e9f6f0; --selected-bg:#e3f2fd; --header-bg:#f1f8ff;
     }
     body{
       font-family:'Aptos','Segoe UI',system-ui,-apple-system,Arial,sans-serif;
@@ -83,50 +83,71 @@
       font-size: 14px;
     }
     
-    /* Simple Excel-like table */
+    /* Enhanced Excel-like table with spreadsheet styling */
     .excel-table {
       width: 100%;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
       margin-top: 20px;
-      font-size: 14px;
+      font-size: 13px;
       background: white;
-      box-shadow: 0 1px 3px rgba(0,0,0,.1);
+      box-shadow: 0 2px 6px rgba(0,0,0,.08);
+      font-family: 'Segoe UI', 'Aptos', system-ui, sans-serif;
     }
     
     .excel-table th {
-      background: #f8f9fa;
-      border: 1px solid #dee2e6;
-      padding: 12px 16px;
+      background: var(--header-bg);
+      border: 1px solid #c6d9f0;
+      padding: 12px 10px;
       text-align: left;
       font-weight: 600;
-      color: #2c3e50;
+      color: #1a365d;
       position: sticky;
       top: 0;
       z-index: 10;
       white-space: nowrap;
+      min-width: 120px;
+      border-bottom: 2px solid #4a8c7d;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .excel-table th:hover {
+      background: #e1ecff;
     }
     
     .excel-table td {
-      border: 1px solid #dee2e6;
-      padding: 10px 16px;
-      color: #495057;
-      vertical-align: top;
+      border: 1px solid #e2e8f0;
+      padding: 10px 10px;
+      color: #2d3748;
+      vertical-align: middle;
+      min-height: 36px;
+      transition: background-color 0.1s;
+      word-wrap: break-word;
+      max-width: 400px;
+      overflow-wrap: break-word;
     }
     
     .excel-table tr:nth-child(even) {
-      background: #f8f9fa;
+      background: #f8fafc;
     }
     
     .excel-table tr:hover {
-      background: #e9f6f0;
+      background: #f0f9ff;
+    }
+    
+    .excel-table td:hover {
+      background: var(--selected-bg);
     }
     
     .table-container {
       max-height: 600px;
       overflow: auto;
       margin-top: 16px;
-      border: 1px solid #dee2e6;
-      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.05);
     }
     
     .table-stats {
@@ -137,6 +158,10 @@
       gap: 16px;
       align-items: center;
       flex-wrap: wrap;
+      padding: 8px 12px;
+      background: #f8fafc;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
     }
     
     .stat-item {
@@ -148,10 +173,121 @@
     .stat-badge {
       background: var(--primary-color);
       color: white;
-      padding: 2px 8px;
+      padding: 2px 10px;
       border-radius: 12px;
       font-size: 11px;
       font-weight: 600;
+      min-width: 40px;
+      text-align: center;
+    }
+    
+    .cell-selected {
+      background: #dbeafe !important;
+      box-shadow: inset 0 0 0 1px #3b82f6;
+    }
+    
+    .cell-highlight {
+      background: #fef3c7 !important;
+    }
+    
+    .cell-numeric {
+      text-align: right;
+      font-family: 'Segoe UI', monospace;
+      color: #065f46;
+    }
+    
+    .cell-date {
+      color: #7c3aed;
+    }
+    
+    /* Toolbar styles */
+    .table-toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 8px 12px;
+      background: #f8fafc;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .delimiter-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+    }
+    
+    .delimiter-control label {
+      margin: 0;
+      font-weight: normal;
+      font-size: 13px;
+    }
+    
+    .delimiter-control select {
+      padding: 4px 8px;
+      font-size: 13px;
+      border-radius: 4px;
+    }
+    
+    /* Column resize handle */
+    .resize-handle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 4px;
+      height: 100%;
+      background: transparent;
+      cursor: col-resize;
+      z-index: 20;
+    }
+    
+    .resize-handle:hover,
+    .resize-handle.active {
+      background: #3b82f6;
+    }
+    
+    /* Search box */
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    
+    .search-box input {
+      border: none;
+      padding: 4px 8px;
+      font-size: 13px;
+      min-width: 200px;
+      outline: none;
+    }
+    
+    /* Filter indicator */
+    .filter-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: #e0f2fe;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #0369a1;
+      margin-left: 4px;
+    }
+    
+    /* Empty cell styling */
+    .empty-cell {
+      color: #94a3b8 !important;
+      font-style: italic;
     }
   </style>
 </head>
@@ -178,15 +314,18 @@
     <div class="card">
       <h2 class="section-title">Upload CSV File</h2>
       <div class="date-format-info">
-        <strong>📁 Upload any CSV file to view its contents in a clean, Excel-like table.</strong>
-        <p style="margin-top: 8px;">This app runs inside Genesys Cloud and processes files locally in your browser.</p>
+        <strong>📁 Upload CSV files with flexible delimiter support</strong>
+        <p style="margin-top: 8px;">This app automatically detects delimiters (comma, semicolon, tab) or lets you specify your own. Perfect for "Text to Columns" functionality.</p>
       </div>
       <div class="help-text">
-        <strong>Simple CSV Viewer:</strong>
+        <strong>Enhanced CSV Viewer with Spreadsheet Features:</strong>
         <ul>
-          <li>Upload CSV files and view as a clean table</li>
-          <li>No complex sorting or filtering - just clean data display</li>
-          <li>Export back to CSV if needed</li>
+          <li>Automatic delimiter detection (comma, semicolon, tab, pipe)</li>
+          <li>Manual delimiter selection for precise parsing</li>
+          <li>Excel-like table with hover effects and cell selection</li>
+          <li>Column statistics and data type detection</li>
+          <li>Search within the table data</li>
+          <li>Export back to CSV with your chosen delimiter</li>
           <li>All processing happens locally - no data sent to external servers</li>
         </ul>
       </div>
@@ -194,10 +333,26 @@
         <div class="upload-icon">📁</div>
         <div><strong>Click to upload CSV file</strong></div>
         <div class="muted" style="margin-top: 8px;">or drag and drop your file here</div>
-        <div class="muted">Maximum file size: 10MB</div>
+        <div class="muted">Supports: CSV, TSV, and other delimited files</div>
       </div>
-      <input type="file" id="fileInput" accept=".csv" style="display:none" />
+      <input type="file" id="fileInput" accept=".csv,.txt,.tsv" style="display:none" />
       <div id="fileName" class="file-name"></div>
+      
+      <div style="margin-top: 20px; display: flex; gap: 12px; align-items: center;">
+        <div class="delimiter-control" id="delimiterControl" style="display: none;">
+          <label for="delimiterSelect">Delimiter:</label>
+          <select id="delimiterSelect">
+            <option value="auto">Auto-detect</option>
+            <option value=",">Comma (,)</option>
+            <option value=";" selected>Semicolon (;)</option>
+            <option value="\t">Tab</option>
+            <option value="|">Pipe (|)</option>
+            <option value="custom">Custom...</option>
+          </select>
+          <input type="text" id="customDelimiter" style="display: none; width: 60px; padding: 4px;" placeholder="e.g., :" maxlength="1" />
+        </div>
+        <button id="reparseBtn" style="display:none;">Reparse with Selected Delimiter</button>
+      </div>
       
       <div style="margin-top: 16px; display: flex; gap: 12px;">
         <button id="exportCsvBtn" style="display:none;">Export Table as CSV</button>
@@ -207,6 +362,16 @@
 
     <div id="dataTableCard" class="card" style="display:none;">
       <h2 class="section-title">CSV Data Table</h2>
+      <div class="table-toolbar" id="tableToolbar" style="display: none;">
+        <div class="search-box">
+          <span>🔍</span>
+          <input type="text" id="tableSearch" placeholder="Search in table..." />
+        </div>
+        <div class="stat-item">
+          <span>Selected:</span>
+          <span id="selectedCount" class="stat-badge">0 cells</span>
+        </div>
+      </div>
       <div class="table-stats" id="tableStats">
         <!-- Table stats will be displayed here -->
       </div>
@@ -230,6 +395,9 @@
     let accessToken = null;
     let csvData = [];
     let currentHeaders = [];
+    let currentDelimiter = ';'; // Default to semicolon as requested
+    let originalCsvText = '';
+    let selectedCells = new Set();
 
     // ===== Improved OAuth Handling =====
     document.addEventListener('DOMContentLoaded', () => {
@@ -329,6 +497,31 @@
       // File input change
       document.getElementById('fileInput').addEventListener('change', handleFileSelect);
       
+      // Delimiter select change
+      document.getElementById('delimiterSelect').addEventListener('change', function() {
+        const customDelimiterInput = document.getElementById('customDelimiter');
+        if (this.value === 'custom') {
+          customDelimiterInput.style.display = 'inline-block';
+          customDelimiterInput.focus();
+        } else {
+          customDelimiterInput.style.display = 'none';
+        }
+      });
+      
+      // Custom delimiter input
+      document.getElementById('customDelimiter').addEventListener('input', function(e) {
+        if (this.value.length > 0) {
+          currentDelimiter = this.value;
+        }
+      });
+      
+      // Reparse button
+      document.getElementById('reparseBtn').addEventListener('click', () => {
+        if (originalCsvText) {
+          parseCSV(originalCsvText);
+        }
+      });
+      
       // Drag and drop
       const uploadArea = document.getElementById('fileUploadArea');
       uploadArea.addEventListener('dragover', (e) => {
@@ -358,6 +551,11 @@
       
       // Clear button
       document.getElementById('clearDataBtn').addEventListener('click', clearData);
+      
+      // Table search
+      document.getElementById('tableSearch')?.addEventListener('input', function(e) {
+        searchTable(e.target.value);
+      });
     }
     
     // Handle file selection
@@ -375,17 +573,13 @@
         return;
       }
       
-      // Check if it's a CSV file
-      if (!file.name.toLowerCase().endsWith('.csv')) {
-        showMessage('Please select a CSV file', 'error');
-        return;
-      }
-      
       // Update UI
       document.getElementById('fileName').textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
       document.getElementById('fileUploadArea').classList.add('has-file');
       
-      // Show export button
+      // Show delimiter controls and buttons
+      document.getElementById('delimiterControl').style.display = 'flex';
+      document.getElementById('reparseBtn').style.display = 'inline-block';
       document.getElementById('exportCsvBtn').style.display = 'inline-block';
       document.getElementById('clearDataBtn').style.display = 'inline-block';
       
@@ -398,8 +592,8 @@
       const reader = new FileReader();
       
       reader.onload = function(e) {
-        const csvText = e.target.result;
-        parseCSV(csvText);
+        originalCsvText = e.target.result;
+        parseCSV(originalCsvText);
       };
       
       reader.onerror = function() {
@@ -409,14 +603,57 @@
       reader.readAsText(file, 'UTF-8');
     }
     
+    // Detect delimiter from text
+    function detectDelimiter(text) {
+      const lines = text.split('\n').slice(0, 10);
+      const delimiters = [',', ';', '\t', '|'];
+      let bestDelimiter = ';'; // Default to semicolon
+      let bestScore = 0;
+      
+      for (const delimiter of delimiters) {
+        let score = 0;
+        for (const line of lines) {
+          if (line.trim()) {
+            const parts = line.split(delimiter);
+            if (parts.length > 1) {
+              score += parts.length;
+            }
+          }
+        }
+        
+        if (score > bestScore) {
+          bestScore = score;
+          bestDelimiter = delimiter;
+        }
+      }
+      
+      return bestDelimiter;
+    }
+    
     // Parse CSV data
     function parseCSV(csvText) {
       try {
         // Reset data
         csvData = [];
+        selectedCells.clear();
         
-        // Parse CSV using proper CSV parsing logic
-        const rows = parseCSVText(csvText);
+        // Get selected delimiter
+        const delimiterSelect = document.getElementById('delimiterSelect');
+        let delimiter = currentDelimiter;
+        
+        if (delimiterSelect.value === 'auto') {
+          delimiter = detectDelimiter(csvText);
+          showMessage(`Auto-detected delimiter: "${delimiter === '\t' ? 'Tab' : delimiter}"`, 'info');
+        } else if (delimiterSelect.value === 'custom') {
+          delimiter = document.getElementById('customDelimiter').value || ';';
+        } else {
+          delimiter = delimiterSelect.value;
+        }
+        
+        currentDelimiter = delimiter;
+        
+        // Parse CSV using proper CSV parsing logic with detected delimiter
+        const rows = parseCSVText(csvText, delimiter);
         
         if (rows.length === 0) {
           showMessage('CSV file is empty', 'error');
@@ -448,24 +685,25 @@
           return;
         }
         
-        console.log(`Parsed ${csvData.length} rows from CSV with ${currentHeaders.length} columns`);
+        console.log(`Parsed ${csvData.length} rows from CSV with ${currentHeaders.length} columns using delimiter: "${delimiter}"`);
         
         // Show data
         renderTable();
         
-        // Show data section
+        // Show data section and toolbar
         document.getElementById('dataTableCard').style.display = 'block';
+        document.getElementById('tableToolbar').style.display = 'flex';
         
-        showMessage(`Successfully loaded ${csvData.length} rows from CSV`, 'success');
+        showMessage(`Successfully loaded ${csvData.length} rows from CSV (using "${delimiter === '\t' ? 'Tab' : delimiter}" delimiter)`, 'success');
         
       } catch (error) {
         console.error('Error parsing CSV:', error);
-        showMessage(`Error parsing CSV: ${error.message}. Make sure your CSV file is properly formatted.`, 'error');
+        showMessage(`Error parsing CSV: ${error.message}. Try selecting a different delimiter.`, 'error');
       }
     }
     
-    // Proper CSV parser that handles quoted values with commas and line breaks
-    function parseCSVText(text) {
+    // Proper CSV parser that handles quoted values with custom delimiters
+    function parseCSVText(text, delimiter = ';') {
       const rows = [];
       let currentRow = [];
       let currentField = '';
@@ -484,7 +722,7 @@
             // Start or end quotes
             insideQuotes = !insideQuotes;
           }
-        } else if (char === ',' && !insideQuotes) {
+        } else if (char === delimiter && !insideQuotes) {
           // End of field
           currentRow.push(currentField);
           currentField = '';
@@ -506,7 +744,8 @@
         rows.push(currentRow);
       }
       
-      return rows;
+      // Remove any completely empty rows
+      return rows.filter(row => row.some(field => field.trim() !== ''));
     }
     
     // Render Excel-like table
@@ -517,15 +756,22 @@
       // Clear container
       tableContainer.innerHTML = '';
       
+      // Analyze data types for each column
+      const columnStats = analyzeColumns();
+      
       // Update table stats
       tableStats.innerHTML = `
         <div class="stat-item">
           <span>Rows:</span>
-          <span class="stat-badge">${csvData.length}</span>
+          <span class="stat-badge">${csvData.length.toLocaleString()}</span>
         </div>
         <div class="stat-item">
           <span>Columns:</span>
           <span class="stat-badge">${currentHeaders.length}</span>
+        </div>
+        <div class="stat-item">
+          <span>Delimiter:</span>
+          <span class="stat-badge">${currentDelimiter === '\t' ? 'Tab' : currentDelimiter}</span>
         </div>
         <div class="stat-item">
           <span>File:</span>
@@ -545,14 +791,24 @@
       // Create table
       const table = document.createElement('table');
       table.className = 'excel-table';
+      table.id = 'dataTable';
       
       // Create header row
       const thead = document.createElement('thead');
       const headerRow = document.createElement('tr');
       
-      currentHeaders.forEach(header => {
+      currentHeaders.forEach((header, colIndex) => {
         const th = document.createElement('th');
         th.textContent = header;
+        
+        // Add data type indicator
+        if (columnStats[header]) {
+          const typeBadge = document.createElement('span');
+          typeBadge.className = 'filter-indicator';
+          typeBadge.textContent = columnStats[header].type;
+          th.appendChild(typeBadge);
+        }
+        
         headerRow.appendChild(th);
       });
       thead.appendChild(headerRow);
@@ -563,16 +819,59 @@
       
       csvData.forEach((row, rowIndex) => {
         const tr = document.createElement('tr');
+        tr.dataset.rowIndex = rowIndex;
         
-        currentHeaders.forEach(header => {
+        currentHeaders.forEach((header, colIndex) => {
           const td = document.createElement('td');
           const cellValue = row[header] || '';
           td.textContent = cellValue;
+          td.dataset.row = rowIndex;
+          td.dataset.col = colIndex;
+          td.dataset.header = header;
+          
+          // Add cell classes based on content
+          if (!cellValue.trim()) {
+            td.classList.add('empty-cell');
+          }
+          
+          // Check if numeric
+          if (!isNaN(cellValue) && cellValue.trim() !== '' && cellValue.trim().indexOf(' ') === -1) {
+            td.classList.add('cell-numeric');
+          }
+          
+          // Check if date (simple detection)
+          if (cellValue.match(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/) || 
+              cellValue.match(/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/)) {
+            td.classList.add('cell-date');
+          }
           
           // Add title for hover if cell content is long
           if (cellValue.length > 50) {
             td.title = cellValue;
           }
+          
+          // Add click handler for selection
+          td.addEventListener('click', (e) => {
+            if (e.shiftKey) {
+              // Multi-select with shift
+              td.classList.toggle('cell-selected');
+              const cellId = `${rowIndex}-${colIndex}`;
+              if (selectedCells.has(cellId)) {
+                selectedCells.delete(cellId);
+              } else {
+                selectedCells.add(cellId);
+              }
+            } else {
+              // Single select
+              document.querySelectorAll('.cell-selected').forEach(cell => {
+                cell.classList.remove('cell-selected');
+              });
+              td.classList.add('cell-selected');
+              selectedCells.clear();
+              selectedCells.add(`${rowIndex}-${colIndex}`);
+            }
+            updateSelectedCount();
+          });
           
           tr.appendChild(td);
         });
@@ -582,6 +881,107 @@
       
       table.appendChild(tbody);
       tableContainer.appendChild(table);
+      
+      // Initialize selected count
+      updateSelectedCount();
+    }
+    
+    // Analyze column data types
+    function analyzeColumns() {
+      const stats = {};
+      
+      currentHeaders.forEach(header => {
+        const values = csvData.map(row => row[header]);
+        const nonEmpty = values.filter(v => v.trim() !== '');
+        
+        let type = 'text';
+        let numericCount = 0;
+        let dateCount = 0;
+        
+        nonEmpty.forEach(value => {
+          // Check if numeric
+          if (!isNaN(value) && value.trim() !== '' && value.indexOf(' ') === -1) {
+            numericCount++;
+          }
+          
+          // Check if date (simple detection)
+          if (value.match(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/) || 
+              value.match(/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/)) {
+            dateCount++;
+          }
+        });
+        
+        if (nonEmpty.length > 0) {
+          if (dateCount / nonEmpty.length > 0.7) {
+            type = 'date';
+          } else if (numericCount / nonEmpty.length > 0.7) {
+            type = 'number';
+          }
+        }
+        
+        stats[header] = {
+          type,
+          total: values.length,
+          nonEmpty: nonEmpty.length,
+          empty: values.length - nonEmpty.length
+        };
+      });
+      
+      return stats;
+    }
+    
+    // Search within table
+    function searchTable(searchTerm) {
+      if (!searchTerm) {
+        // Clear all highlights
+        document.querySelectorAll('.cell-highlight').forEach(cell => {
+          cell.classList.remove('cell-highlight');
+        });
+        return;
+      }
+      
+      const searchLower = searchTerm.toLowerCase();
+      const table = document.getElementById('dataTable');
+      
+      if (!table) return;
+      
+      // Clear previous highlights
+      document.querySelectorAll('.cell-highlight').forEach(cell => {
+        cell.classList.remove('cell-highlight');
+      });
+      
+      // Search in all cells
+      const cells = table.querySelectorAll('td');
+      let matchCount = 0;
+      
+      cells.forEach(cell => {
+        if (cell.textContent.toLowerCase().includes(searchLower)) {
+          cell.classList.add('cell-highlight');
+          matchCount++;
+        }
+      });
+      
+      // Update search stats
+      const searchBox = document.querySelector('.search-box');
+      if (searchBox) {
+        let statsSpan = searchBox.querySelector('.search-stats');
+        if (!statsSpan) {
+          statsSpan = document.createElement('span');
+          statsSpan.className = 'search-stats';
+          statsSpan.style.fontSize = '11px';
+          statsSpan.style.marginLeft = '8px';
+          searchBox.appendChild(statsSpan);
+        }
+        statsSpan.textContent = matchCount > 0 ? `${matchCount} matches` : 'No matches';
+      }
+    }
+    
+    // Update selected cell count
+    function updateSelectedCount() {
+      const selectedCountElement = document.getElementById('selectedCount');
+      if (selectedCountElement) {
+        selectedCountElement.textContent = `${selectedCells.size} ${selectedCells.size === 1 ? 'cell' : 'cells'}`;
+      }
     }
     
     // Export as CSV
@@ -591,27 +991,37 @@
         return;
       }
       
+      // Get delimiter for export
+      let exportDelimiter = currentDelimiter;
+      if (exportDelimiter === '\t') {
+        exportDelimiter = '\t'; // Keep as tab
+      }
+      
       // Create CSV content
-      let csvContent = currentHeaders.map(h => `"${h.replace(/"/g, '""')}"`).join(',') + '\n';
+      let csvContent = currentHeaders.map(h => `"${h.replace(/"/g, '""')}"`).join(exportDelimiter) + '\n';
       
       csvData.forEach(row => {
         const rowValues = currentHeaders.map(header => {
           const value = row[header] || '';
-          // Escape quotes
-          return `"${value.replace(/"/g, '""')}"`;
+          // Escape quotes and wrap in quotes if contains delimiter or quotes
+          const escapedValue = value.replace(/"/g, '""');
+          if (escapedValue.includes(exportDelimiter) || escapedValue.includes('"') || escapedValue.includes('\n') || escapedValue.includes('\r')) {
+            return `"${escapedValue}"`;
+          }
+          return escapedValue;
         });
-        csvContent += rowValues.join(',') + '\n';
+        csvContent += rowValues.join(exportDelimiter) + '\n';
       });
       
       const dataBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(dataBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'exported_data.csv';
+      link.download = `exported_data_${new Date().toISOString().slice(0,10)}.csv`;
       link.click();
       
       URL.revokeObjectURL(url);
-      showMessage('CSV file downloaded successfully!', 'success');
+      showMessage(`CSV file downloaded with "${exportDelimiter === '\t' ? 'Tab' : exportDelimiter}" delimiter!`, 'success');
     }
     
     // Clear all data
@@ -619,16 +1029,22 @@
       if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
         csvData = [];
         currentHeaders = [];
+        selectedCells.clear();
+        originalCsvText = '';
         
         // Reset UI
         document.getElementById('fileName').textContent = '';
         document.getElementById('fileUploadArea').classList.remove('has-file');
         document.getElementById('fileInput').value = '';
+        document.getElementById('delimiterControl').style.display = 'none';
+        document.getElementById('reparseBtn').style.display = 'none';
         document.getElementById('exportCsvBtn').style.display = 'none';
         document.getElementById('clearDataBtn').style.display = 'none';
         document.getElementById('dataTableCard').style.display = 'none';
+        document.getElementById('tableToolbar').style.display = 'none';
         document.getElementById('tableContainer').innerHTML = '';
         document.getElementById('tableStats').innerHTML = '';
+        document.getElementById('selectedCount').textContent = '0 cells';
         
         showMessage('All data cleared', 'success');
       }
