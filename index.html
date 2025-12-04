@@ -61,35 +61,77 @@
       color:var(--primary-color);
     }
 
-    table{
-      width:100%;
-      border-collapse:collapse;
-      margin-top:16px;
+    /* Excel-like table styling */
+    .table-wrapper {
+      max-height: 600px;
+      overflow: auto;
+      margin-top: 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: white;
     }
-    th, td{
-      border:1px solid var(--border-color);
-      padding:10px;
-      text-align:left;
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      min-width: 100%;
     }
-    th{
-      background:var(--light-bg);
-      font-weight:600;
-      position:sticky;
-      top:0;
-      z-index:10;
+    
+    th, td {
+      border: 1px solid #e2e8f0;
+      padding: 8px 12px;
+      text-align: left;
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 14px;
     }
-    tr:nth-child(even){
-      background:#fafafa;
+    
+    th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #475569;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 2px solid #e2e8f0;
+      user-select: none;
     }
-    tr:hover{
-      background:#f0f7f4;
+    
+    td {
+      background: white;
+      color: #334155;
     }
-    .preview-container{
-      max-height:600px;
-      overflow:auto;
-      margin-top:16px;
-      border:1px solid var(--border-color);
-      border-radius:6px;
+    
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+    
+    tr:hover td {
+      background: #f1f5f9;
+    }
+    
+    /* Column resizing */
+    th {
+      position: relative;
+      padding-right: 24px;
+    }
+    
+    .resize-handle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 4px;
+      height: 100%;
+      cursor: col-resize;
+      background: transparent;
+      transition: background 0.2s;
+    }
+    
+    .resize-handle:hover {
+      background: var(--primary-color);
     }
     
     /* Loading spinner */
@@ -173,6 +215,51 @@
       background: var(--primary-color);
       color: white;
     }
+    
+    /* Excel-like cell formatting */
+    .number-cell {
+      text-align: right;
+      font-family: 'Consolas', 'Monaco', monospace;
+    }
+    
+    .date-cell {
+      text-align: center;
+      white-space: nowrap;
+    }
+    
+    .empty-cell {
+      color: #94a3b8;
+      font-style: italic;
+    }
+    
+    /* Column header actions */
+    .column-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+    
+    .sort-indicator {
+      margin-left: 4px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    
+    /* Tooltip for full cell content */
+    td[title]:hover::after {
+      content: attr(title);
+      position: absolute;
+      background: #1e293b;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      z-index: 1000;
+      max-width: 300px;
+      word-wrap: break-word;
+      white-space: normal;
+    }
   </style>
 </head>
 <body>
@@ -198,16 +285,18 @@
     <div class="card">
       <h2 class="section-title">Upload CSV File</h2>
       <div class="date-format-info">
-        <strong>📁 Upload any CSV file to view its contents in an interactive table.</strong>
+        <strong>📁 Upload any CSV file to view its contents in an Excel-like table.</strong>
         <p style="margin-top: 8px;">This app runs inside Genesys Cloud and processes files locally in your browser.</p>
       </div>
       <div class="help-text">
-        <strong>CSV Viewer Features:</strong>
+        <strong>Excel-like Table Features:</strong>
         <ul>
-          <li>View CSV data in a sortable, searchable table</li>
-          <li>Pagination for large datasets</li>
-          <li>Highlight search results</li>
-          <li>All processing happens locally - no data sent to external servers</li>
+          <li>Clean, Excel-style table formatting</li>
+          <li>Automatic column type detection (numbers, dates, text)</li>
+          <li>Column resizing (drag the right edge of column headers)</li>
+          <li>Sort by clicking column headers</li>
+          <li>Search across all data</li>
+          <li>Hover to see full cell content</li>
         </ul>
       </div>
       <div id="fileUploadArea" class="file-upload-area">
@@ -232,7 +321,7 @@
       <div class="controls-bar">
         <input type="text" id="searchInput" class="search-box" placeholder="Search in all columns...">
         <div>
-          <button id="exportCsvBtn">Export Filtered CSV</button>
+          <button id="exportCsvBtn">Export as CSV</button>
           <button id="clearDataBtn" style="background: #dc3545;">Clear Data</button>
         </div>
       </div>
@@ -243,7 +332,7 @@
       <div class="muted" style="margin-bottom: 12px;" id="tableInfo">
         <!-- Table info will be displayed here -->
       </div>
-      <div class="preview-container">
+      <div id="tableWrapper" class="table-wrapper">
         <table id="csvTable">
           <!-- Table will be rendered here -->
         </table>
@@ -270,8 +359,11 @@
     let csvData = [];
     let filteredData = [];
     let currentHeaders = [];
+    let columnTypes = []; // Store detected type for each column
     let currentPage = 1;
     const rowsPerPage = 50;
+    let isResizing = false;
+    let currentResizeColumn = null;
 
     // ===== Improved OAuth Handling =====
     document.addEventListener('DOMContentLoaded', () => {
@@ -448,40 +540,37 @@
       reader.readAsText(file, 'UTF-8');
     }
     
-    // Parse CSV data
+    // Improved CSV parser that handles quoted values, commas inside quotes, and line breaks
     function parseCSV(csvText) {
       try {
-        // Handle different line endings
-        const lines = csvText.split(/\r\n|\n|\r/);
-        if (lines.length === 0) {
+        // Reset data
+        csvData = [];
+        columnTypes = [];
+        
+        // Parse CSV using proper CSV parsing logic
+        const rows = parseCSVText(csvText);
+        
+        if (rows.length === 0) {
           showMessage('CSV file is empty', 'error');
           return;
         }
         
-        // Get headers (first line) and clean them
-        currentHeaders = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        // Get headers from first row
+        currentHeaders = rows[0].map(h => h.trim().replace(/^"|"$/g, ''));
         
-        // Parse data rows
-        csvData = [];
-        
-        for (let i = 1; i < lines.length; i++) {
-          const line = lines[i].trim();
-          if (!line) continue; // Skip empty lines
-          
-          // Parse CSV line with quoted values handling
-          const values = parseCSVLine(line);
-          
-          // Create row object
+        // Process data rows
+        for (let i = 1; i < rows.length; i++) {
+          const rowValues = rows[i];
           const row = {};
-          let hasData = false;
           
+          // Map each header to its value
           currentHeaders.forEach((header, index) => {
-            const value = values[index] || '';
-            row[header] = value.trim();
-            if (value.trim()) hasData = true;
+            const value = (rowValues[index] || '').trim().replace(/^"|"$/g, '');
+            row[header] = value;
           });
           
-          if (hasData) {
+          // Only add row if it has any data
+          if (Object.values(row).some(val => val)) {
             csvData.push(row);
           }
         }
@@ -492,6 +581,9 @@
         }
         
         console.log(`Parsed ${csvData.length} rows from CSV with ${currentHeaders.length} columns`);
+        
+        // Detect column types
+        detectColumnTypes();
         
         // Initialize filtered data (starts as all data)
         filteredData = [...csvData];
@@ -509,43 +601,119 @@
         
       } catch (error) {
         console.error('Error parsing CSV:', error);
-        showMessage(`Error parsing CSV: ${error.message}`, 'error');
+        showMessage(`Error parsing CSV: ${error.message}. Make sure your CSV file is properly formatted.`, 'error');
       }
     }
     
-    // Parse a single CSV line with proper quoted value handling
-    function parseCSVLine(line) {
-      const values = [];
-      let currentValue = '';
+    // Proper CSV parser that handles quoted values with commas and line breaks
+    function parseCSVText(text) {
+      const rows = [];
+      let currentRow = [];
+      let currentField = '';
       let insideQuotes = false;
       
-      for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        const nextChar = line[i + 1];
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i + 1];
         
         if (char === '"') {
           if (insideQuotes && nextChar === '"') {
-            // Escaped quote inside quoted string
-            currentValue += '"';
-            i++; // Skip next character
+            // Escaped quote
+            currentField += '"';
+            i++; // Skip next quote
           } else {
-            // Start or end of quoted string
+            // Start or end quotes
             insideQuotes = !insideQuotes;
           }
         } else if (char === ',' && !insideQuotes) {
           // End of field
-          values.push(currentValue);
-          currentValue = '';
+          currentRow.push(currentField);
+          currentField = '';
+        } else if ((char === '\n' || (char === '\r' && nextChar === '\n')) && !insideQuotes) {
+          // End of row (handle both \n and \r\n)
+          if (char === '\r') i++; // Skip \n after \r
+          currentRow.push(currentField);
+          rows.push(currentRow);
+          currentRow = [];
+          currentField = '';
         } else {
-          // Regular character
-          currentValue += char;
+          currentField += char;
         }
       }
       
-      // Add the last value
-      values.push(currentValue);
+      // Add the last field and row
+      if (currentField !== '' || currentRow.length > 0) {
+        currentRow.push(currentField);
+        rows.push(currentRow);
+      }
       
-      return values;
+      return rows;
+    }
+    
+    // Detect column types (number, date, text)
+    function detectColumnTypes() {
+      columnTypes = [];
+      
+      currentHeaders.forEach((header, colIndex) => {
+        // Sample first 100 rows to determine type
+        const sampleSize = Math.min(100, csvData.length);
+        let isNumber = true;
+        let isDate = true;
+        let nonEmptyCount = 0;
+        
+        for (let i = 0; i < sampleSize; i++) {
+          const value = csvData[i][header];
+          
+          if (value && value.trim()) {
+            nonEmptyCount++;
+            
+            // Check if it's a number
+            if (isNumber) {
+              const num = parseFloat(value.replace(/[^\d.-]/g, ''));
+              if (isNaN(num)) {
+                isNumber = false;
+              }
+            }
+            
+            // Check if it's a date (common formats)
+            if (isDate) {
+              const dateFormats = [
+                /^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD
+                /^\d{2}\/\d{2}\/\d{4}$/, // DD/MM/YYYY
+                /^\d{2}\/\d{2}\/\d{2}$/, // DD/MM/YY
+                /^\d{2}-\d{2}-\d{4}$/, // DD-MM-YYYY
+                /^\d{2}-\d{2}-\d{2}$/, // DD-MM-YY
+                /^\d{4}\/\d{2}\/\d{2}$/, // YYYY/MM/DD
+              ];
+              
+              let matchesDate = false;
+              for (const format of dateFormats) {
+                if (format.test(value)) {
+                  matchesDate = true;
+                  break;
+                }
+              }
+              
+              if (!matchesDate) {
+                isDate = false;
+              }
+            }
+          }
+        }
+        
+        // Determine final type
+        if (nonEmptyCount === 0) {
+          columnTypes.push('text'); // Default to text if no data
+        } else if (isNumber && nonEmptyCount > sampleSize * 0.7) {
+          columnTypes.push('number');
+        } else if (isDate && nonEmptyCount > sampleSize * 0.7) {
+          columnTypes.push('date');
+        } else {
+          columnTypes.push('text');
+        }
+      });
+      
+      console.log('Detected column types:', columnTypes);
     }
     
     // Show data statistics
@@ -571,15 +739,17 @@
         }
       ];
       
-      // Add column count stats
-      currentHeaders.forEach((header, index) => {
-        const nonEmptyCount = csvData.filter(row => row[header] && row[header].trim()).length;
-        const fillRate = ((nonEmptyCount / csvData.length) * 100).toFixed(1);
-        
+      // Add column type stats
+      const typeCounts = columnTypes.reduce((acc, type) => {
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      }, {});
+      
+      Object.entries(typeCounts).forEach(([type, count]) => {
         stats.push({
-          label: `"${header}" fill rate`,
-          value: `${fillRate}%`,
-          color: index % 2 === 0 ? '#6CAB9F' : '#5A9B8D'
+          label: `${type.charAt(0).toUpperCase() + type.slice(1)} Columns`,
+          value: count,
+          color: type === 'number' ? '#4299e1' : type === 'date' ? '#ed8936' : '#a0aec0'
         });
       });
       
@@ -616,7 +786,7 @@
       renderTable();
     }
     
-    // Render table with pagination
+    // Render Excel-like table
     function renderTable() {
       const table = document.getElementById('csvTable');
       const tableInfo = document.getElementById('tableInfo');
@@ -640,18 +810,43 @@
         return;
       }
       
-      // Create header row
+      // Create header row with resizable columns
       const thead = document.createElement('thead');
       const headerRow = document.createElement('tr');
       
-      currentHeaders.forEach(header => {
+      currentHeaders.forEach((header, colIndex) => {
         const th = document.createElement('th');
-        th.textContent = header;
+        
+        // Create column header with sort indicator
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'column-header';
+        headerDiv.innerHTML = `
+          <span>${header}</span>
+          <span class="sort-indicator">↕️</span>
+        `;
+        
+        th.appendChild(headerDiv);
+        
+        // Add resize handle
+        const resizeHandle = document.createElement('div');
+        resizeHandle.className = 'resize-handle';
+        resizeHandle.dataset.columnIndex = colIndex;
+        
+        // Add resize event listeners
+        resizeHandle.addEventListener('mousedown', initResize);
+        th.appendChild(resizeHandle);
+        
+        // Add sort click listener
         th.style.cursor = 'pointer';
-        th.addEventListener('click', () => sortTable(header));
-        th.title = `Click to sort by ${header}`;
+        th.addEventListener('click', (e) => {
+          if (!isResizing) {
+            sortTable(colIndex);
+          }
+        });
+        
         headerRow.appendChild(th);
       });
+      
       thead.appendChild(headerRow);
       table.appendChild(thead);
       
@@ -664,23 +859,48 @@
       // Create table body
       const tbody = document.createElement('tbody');
       
-      pageData.forEach((row, rowIndex) => {
+      pageData.forEach((row) => {
         const tr = document.createElement('tr');
         
-        currentHeaders.forEach(header => {
+        currentHeaders.forEach((header, colIndex) => {
           const td = document.createElement('td');
           let cellValue = row[header] || '';
           
-          // Highlight search matches
-          const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-          if (searchTerm && cellValue.toLowerCase().includes(searchTerm)) {
-            td.innerHTML = highlightText(cellValue, searchTerm);
-            td.classList.add('highlight');
+          // Apply cell formatting based on detected type
+          const type = columnTypes[colIndex];
+          
+          if (!cellValue) {
+            td.className = 'empty-cell';
+            td.textContent = '(empty)';
           } else {
-            td.textContent = cellValue;
+            // Format based on type
+            if (type === 'number') {
+              td.className = 'number-cell';
+              // Try to format as number with commas
+              const num = parseFloat(cellValue.replace(/[^\d.-]/g, ''));
+              if (!isNaN(num)) {
+                td.textContent = num.toLocaleString();
+              } else {
+                td.textContent = cellValue;
+              }
+            } else if (type === 'date') {
+              td.className = 'date-cell';
+              td.textContent = cellValue;
+            } else {
+              td.textContent = cellValue;
+            }
+            
+            // Highlight search matches
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm && cellValue.toLowerCase().includes(searchTerm)) {
+              td.innerHTML = highlightText(cellValue, searchTerm);
+              td.classList.add('highlight');
+            }
           }
           
-          td.title = cellValue;
+          // Add tooltip with full content (if truncated)
+          td.title = cellValue || '(empty)';
+          
           tr.appendChild(td);
         });
         
@@ -696,6 +916,33 @@
       } else {
         paginationControls.style.display = 'none';
       }
+    }
+    
+    // Initialize column resizing
+    function initResize(e) {
+      e.preventDefault();
+      isResizing = true;
+      currentResizeColumn = parseInt(e.target.dataset.columnIndex);
+      
+      const th = e.target.parentElement;
+      const startX = e.pageX;
+      const startWidth = th.offsetWidth;
+      
+      function doResize(e) {
+        const newWidth = startWidth + (e.pageX - startX);
+        if (newWidth > 50) { // Minimum width
+          th.style.width = `${newWidth}px`;
+        }
+      }
+      
+      function stopResize() {
+        document.removeEventListener('mousemove', doResize);
+        document.removeEventListener('mouseup', stopResize);
+        setTimeout(() => { isResizing = false; }, 100);
+      }
+      
+      document.addEventListener('mousemove', doResize);
+      document.addEventListener('mouseup', stopResize);
     }
     
     // Highlight search matches in text
@@ -789,24 +1036,70 @@
     }
     
     // Sort table by column
-    function sortTable(column) {
+    function sortTable(columnIndex) {
+      const header = currentHeaders[columnIndex];
+      const type = columnTypes[columnIndex];
+      
       filteredData.sort((a, b) => {
-        const valA = a[column] || '';
-        const valB = b[column] || '';
+        const valA = a[header] || '';
+        const valB = b[header] || '';
         
-        // Try numeric comparison first
-        const numA = parseFloat(valA);
-        const numB = parseFloat(valB);
-        
-        if (!isNaN(numA) && !isNaN(numB)) {
+        if (type === 'number') {
+          const numA = parseFloat(valA.replace(/[^\d.-]/g, '')) || 0;
+          const numB = parseFloat(valB.replace(/[^\d.-]/g, '')) || 0;
           return numA - numB;
+        } else if (type === 'date') {
+          // Try to parse dates
+          const dateA = parseDate(valA);
+          const dateB = parseDate(valB);
+          return dateA - dateB;
+        } else {
+          return valA.toString().localeCompare(valB.toString());
         }
-        
-        // Fall back to string comparison
-        return valA.toString().localeCompare(valB.toString());
       });
       
       renderTable();
+    }
+    
+    // Helper to parse dates
+    function parseDate(dateStr) {
+      if (!dateStr) return new Date(0);
+      
+      // Try different date formats
+      const formats = [
+        /^(\d{4})[-/](\d{2})[-/](\d{2})$/, // YYYY-MM-DD or YYYY/MM/DD
+        /^(\d{2})[-/](\d{2})[-/](\d{4})$/, // DD-MM-YYYY or DD/MM/YYYY
+        /^(\d{2})[-/](\d{2})[-/](\d{2})$/, // DD-MM-YY or DD/MM/YY
+      ];
+      
+      for (const format of formats) {
+        const match = dateStr.match(format);
+        if (match) {
+          let year, month, day;
+          
+          if (match[1].length === 4) {
+            // YYYY-MM-DD format
+            year = parseInt(match[1]);
+            month = parseInt(match[2]) - 1;
+            day = parseInt(match[3]);
+          } else if (match[3].length === 4) {
+            // DD-MM-YYYY format
+            day = parseInt(match[1]);
+            month = parseInt(match[2]) - 1;
+            year = parseInt(match[3]);
+          } else {
+            // DD-MM-YY format
+            day = parseInt(match[1]);
+            month = parseInt(match[2]) - 1;
+            year = 2000 + parseInt(match[3]);
+          }
+          
+          return new Date(year, month, day);
+        }
+      }
+      
+      // Fallback to string comparison
+      return new Date(dateStr) || new Date(0);
     }
     
     // Export as CSV
@@ -817,16 +1110,13 @@
       }
       
       // Create CSV content
-      let csvContent = currentHeaders.join(',') + '\n';
+      let csvContent = currentHeaders.map(h => `"${h.replace(/"/g, '""')}"`).join(',') + '\n';
       
       filteredData.forEach(row => {
         const rowValues = currentHeaders.map(header => {
           const value = row[header] || '';
-          // Escape quotes and wrap in quotes if contains comma or quote
-          if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-            return '"' + value.replace(/"/g, '""') + '"';
-          }
-          return value;
+          // Escape quotes
+          return `"${value.replace(/"/g, '""')}"`;
         });
         csvContent += rowValues.join(',') + '\n';
       });
@@ -848,6 +1138,7 @@
         csvData = [];
         filteredData = [];
         currentHeaders = [];
+        columnTypes = [];
         currentPage = 1;
         
         // Reset UI
