@@ -33,7 +33,7 @@
 
     #messageContainer{display:none;margin-top:12px}
     .error-message{color:#b4231a;background:#fee2e2;border:1px solid #fecaca;padding:10px;border-radius:6px}
-    .success-message{color:#14532d;background:#dcfce7;border:1px solid #bbf7d0;padding:10px;border-radius=6px}
+    .success-message{color:#14532d;background:#dcfce7;border:1px solid #bbf7d0;padding:10px;border-radius:6px}
     .info-message{color:#6b4e16;background:#fff7ed;border:1px solid #ffedd5;padding:10px;border-radius:6px}
 
     .file-upload-area{
@@ -525,8 +525,6 @@
       color: #92400e;
     }
     
-    /* Data table in analytics - REMOVED as requested */
-    
     /* Top reviews */
     .review-card {
       border: 1px solid #e2e8f0;
@@ -691,7 +689,7 @@
       
       <!-- Data Table Tab -->
       <div id="dataTab" class="tab-content active">
-        <div class="card">
+        <div class="card" id="dataTableCard">
           <h2 class="section-title">CSV Data Table</h2>
           <div class="table-toolbar" id="tableToolbar" style="display: none;">
             <div class="search-box">
@@ -1009,6 +1007,8 @@
     
     // Tab switching function
     function switchTab(tabId) {
+      console.log('Switching to tab:', tabId);
+      
       // Update tab buttons
       document.querySelectorAll('.tab-button').forEach(button => {
         button.classList.toggle('active', button.getAttribute('data-tab') === tabId);
@@ -1021,6 +1021,7 @@
       
       // If switching to analytics tab, update analytics
       if (tabId === 'analyticsTab' && csvData.length > 0) {
+        console.log('Switched to analytics tab, updating analytics...');
         updateAnalytics();
       }
     }
@@ -1100,7 +1101,7 @@
       return bestDelimiter;
     }
     
-    // Parse CSV data
+    // Parse CSV data - FIXED: Added missing element ID and improved timing
     function parseCSV(csvText) {
       try {
         // Reset data
@@ -1157,6 +1158,7 @@
         }
         
         console.log(`Parsed ${csvData.length} rows from CSV with ${currentHeaders.length} columns using delimiter: "${delimiter}"`);
+        console.log('Headers:', currentHeaders);
         
         // Set filtered data to all data initially
         filteredData = [...csvData];
@@ -1165,11 +1167,26 @@
         renderTable();
         
         // Show data section and toolbar
-        document.getElementById('dataTableCard').style.display = 'block';
-        document.getElementById('tableToolbar').style.display = 'flex';
+        const dataTableCard = document.getElementById('dataTableCard');
+        if (dataTableCard) {
+          dataTableCard.style.display = 'block';
+        }
+        
+        const tableToolbar = document.getElementById('tableToolbar');
+        if (tableToolbar) {
+          tableToolbar.style.display = 'flex';
+        }
         
         // Setup analytics IMMEDIATELY after data is loaded
+        console.log('Setting up analytics after file load...');
         setupAnalytics();
+        
+        // If we're already on the analytics tab, update it immediately
+        const analyticsTab = document.getElementById('analyticsTab');
+        if (analyticsTab && analyticsTab.classList.contains('active')) {
+          console.log('Already on analytics tab, updating immediately...');
+          updateAnalytics();
+        }
         
         showMessage(`Successfully loaded ${csvData.length} rows from CSV (using "${delimiter === '\t' ? 'Tab' : delimiter}" delimiter)`, 'success');
         
@@ -1470,7 +1487,7 @@
       }
     }
     
-    // Setup analytics after data is loaded - SIMPLIFIED AND RELIABLE
+    // Setup analytics after data is loaded - FIXED: Added timing checks
     function setupAnalytics() {
       console.log('Setting up analytics with', filteredData.length, 'rows');
       
@@ -1489,13 +1506,12 @@
       // Populate column selectors - SIMPLE AND RELIABLE
       populateColumnSelectors();
       
-      // Generate initial analytics
-      updateAnalytics();
+      console.log('Analytics setup complete');
     }
     
-    // Populate column selectors for analytics - SIMPLIFIED
+    // Populate column selectors for analytics - ENHANCED with better logging
     function populateColumnSelectors() {
-      console.log('Populating column selectors with', currentHeaders.length, 'headers');
+      console.log('Populating column selectors with', currentHeaders.length, 'headers:', currentHeaders);
       
       const dropdowns = [
         { id: 'wordCloudColumn', label: 'Select text column for word cloud...' },
@@ -1523,6 +1539,8 @@
           option.textContent = header;
           select.appendChild(option);
         });
+        
+        console.log(`Populated ${id} with ${currentHeaders.length} options`);
       });
       
       // Auto-select common columns
@@ -1531,10 +1549,13 @@
       console.log('Column selectors populated successfully');
     }
     
-    // Auto-select common column names
+    // Auto-select common column names - ENHANCED with better logging
     function autoSelectCommonColumns() {
+      console.log('Auto-selecting common columns...');
       const commonScoreNames = ['score', 'rating', 'percent', 'percentage', 'csat', 'nps', 'satisfaction'];
       const commonTextNames = ['review', 'comment', 'feedback', 'text', 'response', 'note'];
+      
+      let selectedColumns = [];
       
       currentHeaders.forEach(header => {
         const lowerHeader = header.toLowerCase();
@@ -1543,8 +1564,13 @@
         if (commonScoreNames.some(name => lowerHeader.includes(name))) {
           const scoreSelect = document.getElementById('scoreColumn');
           const reviewScoreSelect = document.getElementById('reviewScoreColumn');
-          if (scoreSelect) scoreSelect.value = header;
-          if (reviewScoreSelect) reviewScoreSelect.value = header;
+          if (scoreSelect) {
+            scoreSelect.value = header;
+            selectedColumns.push(`Score: ${header}`);
+          }
+          if (reviewScoreSelect) {
+            reviewScoreSelect.value = header;
+          }
         }
         
         // Auto-select text column
@@ -1553,11 +1579,34 @@
           const sentimentSelect = document.getElementById('sentimentColumn');
           const reviewTextSelect = document.getElementById('reviewTextColumn');
           
-          if (wordCloudSelect) wordCloudSelect.value = header;
-          if (sentimentSelect) sentimentSelect.value = header;
-          if (reviewTextSelect) reviewTextSelect.value = header;
+          if (wordCloudSelect) {
+            wordCloudSelect.value = header;
+            selectedColumns.push(`Word Cloud: ${header}`);
+          }
+          if (sentimentSelect) {
+            sentimentSelect.value = header;
+            selectedColumns.push(`Sentiment: ${header}`);
+          }
+          if (reviewTextSelect) {
+            reviewTextSelect.value = header;
+            selectedColumns.push(`Review Text: ${header}`);
+          }
         }
       });
+      
+      if (selectedColumns.length > 0) {
+        console.log('Auto-selected columns:', selectedColumns);
+      } else {
+        console.log('No common columns found for auto-selection');
+      }
+      
+      // Generate analytics if we have selections
+      if (selectedColumns.length > 0) {
+        setTimeout(() => {
+          console.log('Generating analytics with auto-selected columns...');
+          updateAnalytics();
+        }, 100);
+      }
     }
     
     // Apply date filter
@@ -1693,35 +1742,67 @@
       return null;
     }
     
-    // Update all analytics
+    // Update all analytics - ENHANCED with better error handling
     function updateAnalytics() {
-      console.log('Updating analytics');
+      console.log('=== UPDATING ANALYTICS ===');
+      console.log('Filtered data:', filteredData.length, 'rows');
+      
+      // Update key metrics first
       updateKeyMetrics();
       
-      // Generate analytics based on current selections
-      const wordCloudColumn = document.getElementById('wordCloudColumn').value;
-      const scoreColumn = document.getElementById('scoreColumn').value;
-      const sentimentColumn = document.getElementById('sentimentColumn').value;
-      const reviewTextColumn = document.getElementById('reviewTextColumn').value;
-      const reviewScoreColumn = document.getElementById('reviewScoreColumn').value;
+      // Get current selections
+      const wordCloudColumn = document.getElementById('wordCloudColumn')?.value;
+      const scoreColumn = document.getElementById('scoreColumn')?.value;
+      const sentimentColumn = document.getElementById('sentimentColumn')?.value;
+      const reviewTextColumn = document.getElementById('reviewTextColumn')?.value;
+      const reviewScoreColumn = document.getElementById('reviewScoreColumn')?.value;
       
-      if (wordCloudColumn) generateWordCloud();
-      if (scoreColumn) generateScoreDistribution();
-      if (sentimentColumn) generateSentimentAnalysis();
-      if (reviewTextColumn && reviewScoreColumn) updateTopReviews();
+      console.log('Selected columns:', {
+        wordCloudColumn,
+        scoreColumn,
+        sentimentColumn,
+        reviewTextColumn,
+        reviewScoreColumn
+      });
+      
+      // Generate analytics based on selections
+      if (wordCloudColumn) {
+        console.log('Generating word cloud...');
+        generateWordCloud();
+      }
+      
+      if (scoreColumn) {
+        console.log('Generating score distribution...');
+        generateScoreDistribution();
+      }
+      
+      if (sentimentColumn) {
+        console.log('Generating sentiment analysis...');
+        generateSentimentAnalysis();
+      }
+      
+      if (reviewTextColumn && reviewScoreColumn) {
+        console.log('Generating top reviews...');
+        updateTopReviews();
+      }
+      
+      console.log('=== ANALYTICS UPDATE COMPLETE ===');
     }
     
     // Update key metrics
     function updateKeyMetrics() {
       const keyMetrics = document.getElementById('keyMetrics');
-      if (!keyMetrics) return;
+      if (!keyMetrics) {
+        console.error('Key metrics element not found');
+        return;
+      }
       
       // Calculate basic metrics
       const totalRows = filteredData.length;
       const totalColumns = currentHeaders.length;
       
       // Find score column and calculate average
-      const scoreColumn = document.getElementById('scoreColumn').value;
+      const scoreColumn = document.getElementById('scoreColumn')?.value;
       let avgScore = 'N/A';
       let scoreCount = 0;
       
@@ -1785,13 +1866,15 @@
             'No date filter applied'}</div>
         </div>
       `;
+      
+      console.log('Key metrics updated');
     }
     
     // Generate word cloud
     function generateWordCloud() {
-      console.log('Generating word cloud...');
+      console.log('=== GENERATING WORD CLOUD ===');
       const wordCloudContainer = document.getElementById('wordCloud');
-      const column = document.getElementById('wordCloudColumn').value;
+      const column = document.getElementById('wordCloudColumn')?.value;
       
       if (!column) {
         wordCloudContainer.innerHTML = `
@@ -1802,12 +1885,16 @@
         return;
       }
       
+      console.log('Using column for word cloud:', column);
+      
       // Extract text from selected column
       const textData = filteredData
         .map(row => row[column] || '')
         .filter(text => text && String(text).trim() !== '')
         .join(' ')
         .toLowerCase();
+      
+      console.log('Text data extracted, length:', textData.length);
       
       if (!textData.trim()) {
         wordCloudContainer.innerHTML = `
@@ -1833,6 +1920,8 @@
       
       // Tokenize and count words
       const words = textData.match(/\b[a-z]{3,}\b/g) || [];
+      console.log('Total words found:', words.length);
+      
       const wordCounts = {};
       
       words.forEach(word => {
@@ -1845,6 +1934,8 @@
       const topWords = Object.entries(wordCounts)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 40);
+      
+      console.log('Top words found:', topWords.length);
       
       if (topWords.length === 0) {
         wordCloudContainer.innerHTML = `
@@ -1895,9 +1986,9 @@
     
     // Generate score distribution
     function generateScoreDistribution() {
-      console.log('Generating score distribution...');
+      console.log('=== GENERATING SCORE DISTRIBUTION ===');
       const scoreContainer = document.getElementById('scoreDistribution');
-      const column = document.getElementById('scoreColumn').value;
+      const column = document.getElementById('scoreColumn')?.value;
       
       if (!column) {
         scoreContainer.innerHTML = `
@@ -1907,6 +1998,8 @@
         `;
         return;
       }
+      
+      console.log('Using column for score distribution:', column);
       
       // Extract scores
       const scores = filteredData
@@ -1918,6 +2011,8 @@
           return parseFloat(cleanVal);
         })
         .filter(score => !isNaN(score) && score >= 0 && score <= 100);
+      
+      console.log('Valid scores found:', scores.length);
       
       if (scores.length === 0) {
         scoreContainer.innerHTML = `
@@ -2000,9 +2095,9 @@
     
     // Generate sentiment analysis
     function generateSentimentAnalysis() {
-      console.log('Generating sentiment analysis...');
+      console.log('=== GENERATING SENTIMENT ANALYSIS ===');
       const sentimentContainer = document.getElementById('sentimentAnalysis');
-      const column = document.getElementById('sentimentColumn').value;
+      const column = document.getElementById('sentimentColumn')?.value;
       
       if (!column) {
         sentimentContainer.innerHTML = `
@@ -2013,10 +2108,14 @@
         return;
       }
       
+      console.log('Using column for sentiment analysis:', column);
+      
       // Extract text from selected column
       const texts = filteredData
         .map(row => row[column] || '')
         .filter(text => text && String(text).trim() !== '');
+      
+      console.log('Texts found for sentiment:', texts.length);
       
       if (texts.length === 0) {
         sentimentContainer.innerHTML = `
@@ -2115,10 +2214,10 @@
     
     // Update top reviews
     function updateTopReviews() {
-      console.log('Updating top reviews...');
+      console.log('=== UPDATING TOP REVIEWS ===');
       const topReviewsContainer = document.getElementById('topReviews');
-      const textColumn = document.getElementById('reviewTextColumn').value;
-      const scoreColumn = document.getElementById('reviewScoreColumn').value;
+      const textColumn = document.getElementById('reviewTextColumn')?.value;
+      const scoreColumn = document.getElementById('reviewScoreColumn')?.value;
       
       if (!textColumn || !scoreColumn) {
         topReviewsContainer.innerHTML = `
@@ -2128,6 +2227,8 @@
         `;
         return;
       }
+      
+      console.log('Using columns for top reviews - Text:', textColumn, 'Score:', scoreColumn);
       
       // Get reviews with scores
       const reviews = filteredData
@@ -2139,6 +2240,8 @@
         .filter(review => review.text.trim() !== '' && !isNaN(review.score) && review.score >= 0 && review.score <= 100)
         .sort((a, b) => b.score - a.score)
         .slice(0, 10);
+      
+      console.log('Valid reviews found:', reviews.length);
       
       if (reviews.length === 0) {
         topReviewsContainer.innerHTML = `
@@ -2267,7 +2370,13 @@
         document.getElementById('exportCsvBtn').style.display = 'none';
         document.getElementById('clearDataBtn').style.display = 'none';
         document.getElementById('analyticsTabBtn').style.display = 'none';
-        document.getElementById('dataTableCard').style.display = 'none';
+        
+        // Hide data table card
+        const dataTableCard = document.getElementById('dataTableCard');
+        if (dataTableCard) {
+          dataTableCard.style.display = 'none';
+        }
+        
         document.getElementById('tableToolbar').style.display = 'none';
         document.getElementById('analyticsToolbar').style.display = 'none';
         document.getElementById('tableContainer').innerHTML = '';
