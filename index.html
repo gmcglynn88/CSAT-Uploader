@@ -1,1 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CSV Viewer for Genesys Cloud</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    :root{
+      --primary-color:#63AB8F; --secondary-color:#4A8C7D; --border-color:#DEE2E6;
+      --light-bg:#F8F9FA; --card-bg:#FFFFFF; --text-color:#2C3E50; --text-light:#6C757D;
+      --pill:#e9f6f0;
+    }
+    body{
+      font-family:'Aptos','Segoe UI',system-ui,-apple-system,Arial,sans-serif;
+      margin:20px;padding:20px;max-width:1400px;background:var(--light-bg);color:var(--text-color)
+    }
+    #logo-container{text-align:center;margin-bottom:20px} #logo{width:300px}
+    h1{margin:0 0 16px; color: var(--primary-color);}
+    .card{background:var(--card-bg);border:1px solid var(--border-color);border-radius:12px;padding:24px;margin-top:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+    label{display:block;font-weight:600;margin-bottom:6px}
+    input,select,button,textarea{padding:10px;border:1px solid var(--border-color);border-radius:6px;background:#fff;font-size:14px}
+    button{background:var(--primary-color);color:#fff;font-weight:600;cursor:pointer;transition:background .2s}
+    button:hover{background:var(--secondary-color)} button:disabled{background:var(--text-light);cursor:not-allowed}
+    .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;align-items:end}
+    .full-width-btn{width:100%;padding:14px 18px;font-size:16px;margin-top:12px}
+    .muted{color:var(--text-light);font-size:12px}
+    .section-title{margin:0 0 10px;color:var(--secondary-color)}
 
+    #messageContainer{display:none;margin-top:12px}
+    .error-message{color:#b4231a;background:#fee2e2;border:1px solid #fecaca;padding:10px;border-radius:6px}
+    .success-message{color:#14532d;background:#dcfce7;border:1px solid #bbf7d0;padding:10px;border-radius:6px}
+    .info-message{color:#6b4e16;background:#fff7ed;border:1px solid #ffedd5;padding:10px;border-radius:6px}
+
+    .file-upload-area{
+      border:2px dashed var(--border-color);
+      border-radius:8px;
+      padding:40px 20px;
+      text-align:center;
+      background:var(--light-bg);
+      cursor:pointer;
+      transition:border-color .2s, background .2s;
+    }
+    .file-upload-area:hover{
+      border-color:var(--primary-color);
+      background:#f0f7f4;
+    }
+    .file-upload-area.has-file{
+      border-color:var(--primary-color);
+      background:#e9f6f0;
+    }
+    .upload-icon{
+      font-size:48px;
+      color:var(--primary-color);
+      margin-bottom:12px;
+    }
+    .file-name{
+      margin-top:12px;
+      font-weight:600;
+      color:var(--primary-color);
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:16px;
+    }
+    th, td{
+      border:1px solid var(--border-color);
+      padding:10px;
+      text-align:left;
+    }
+    th{
+      background:var(--light-bg);
+      font-weight:600;
+      position:sticky;
+      top:0;
+      z-index:10;
+    }
+    tr:nth-child(even){
+      background:#fafafa;
+    }
+    tr:hover{
+      background:#f0f7f4;
+    }
+    .preview-container{
+      max-height:600px;
+      overflow:auto;
+      margin-top:16px;
+      border:1px solid var(--border-color);
+      border-radius:6px;
+    }
+    .json-preview{
+      background:#f8f9fa;
+      border:1px solid var(--border-color);
+      border-radius:6px;
+      padding:16px;
+      font-family:monospace;
+      font-size:12px;
+      white-space:pre-wrap;
+      max-height:400px;
+      overflow:auto;
+    }
+    
+    /* Loading spinner */
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-in-out infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading { display: flex; align-items: center; gap: 8px; }
+    
+    .help-text {
+      background: #f8f9fa;
+      border-left: 3px solid var(--primary-color);
+      padding: 12px;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+    .help-text ul {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+    .help-text li {
+      margin-bottom: 4px;
+    }
+    
+    .date-format-info {
+      background: #e9f6f0;
+      border: 1px solid var(--primary-color);
+      border-radius: 6px;
+      padding: 12px;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+    
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .stat-card {
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+    .stat-label {
+      font-size: 14px;
+      color: var(--text-light);
+      margin-top: 4px;
+    }
+    
+    .controls-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+    }
+    
+    .filter-controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .column-filter {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .highlight {
+      background-color: #fff3cd !important;
+    }
+    
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    
+    .pagination button {
+      padding: 6px 12px;
+      background: white;
+      color: var(--text-color);
+    }
+    
+    .pagination button.active {
+      background: var(--primary-color);
+      color: white;
+    }
+    
+    .export-options {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="logo-container">
+    <img id="logo" src="https://raw.githubusercontent.com/gmcglynn88/Management-Unit-Search/main/Consultinglogo%20(2).png" alt="Company Logo">
+  </div>
+
+  <h1>CSV Viewer for Genesys Cloud</h1>
+
+  <div id="authCard" class="card">
+    <div id="auth-message" class="info-message">Authenticating with Genesys Cloud...</div>
+  </div>
+
+  <div id="appContent" style="display:none;">
+    <div id="messageContainer"></div>
+
+    <div class="card">
+      <h2 class="section-title">Upload CSV File</h2>
+      <div class="date-format-info">
+        <strong>📁 Upload any CSV file to view its contents in an interactive table.</strong>
+        <p style="margin-top: 8px;">This app runs inside Genesys Cloud and processes files locally in your browser.</p>
+      </div>
+      <div class="help-text">
+        <strong>Features:</strong>
+        <ul>
+          <li>View CSV data in a sortable, searchable table</li>
+          <li>Filter data by column values</li>
+          <li>Download data as JSON or filtered CSV</li>
+          <li>All processing happens locally - no data sent to external servers</li>
+        </ul>
+      </div>
+      <div id="fileUploadArea" class="file-upload-area">
+        <div class="upload-icon">📁</div>
+        <div><strong>Click to upload CSV file</strong></div>
+        <div class="muted" style="margin-top: 8px;">or drag and drop your file here</div>
+        <div class="muted">Maximum file size: 10MB</div>
+      </div>
+      <input type="file" id="fileInput" accept=".csv" style="display:none" />
+      <div id="fileName" class="file-name"></div>
+    </div>
+
+    <div id="dataStats" class="card" style="display:none;">
+      <h2 class="section-title">Data Statistics</h2>
+      <div class="stats-container" id="statsContainer">
+        <!-- Stats will be populated here -->
+      </div>
+    </div>
+
+    <div id="dataControls" class="card" style="display:none;">
+      <h2 class="section-title">Data Controls</h2>
+      <div class="controls-bar">
+        <input type="text" id="searchInput" class="search-box" placeholder="Search in all columns...">
+        <div>
+          <button id="exportJsonBtn">Export as JSON</button>
+          <button id="exportCsvBtn">Export as CSV</button>
+          <button id="clearDataBtn" style="background: #dc3545;">Clear Data</button>
+        </div>
+      </div>
+      
+      <div class="filter-controls" id="columnFilters">
+        <!-- Column filters will be dynamically added here -->
+      </div>
+    </div>
+
+    <div id="dataTableCard" class="card" style="display:none;">
+      <h2 class="section-title">Data Table</h2>
+      <div class="muted" style="margin-bottom: 12px;" id="tableInfo">
+        <!-- Table info will be displayed here -->
+      </div>
+      <div class="preview-container">
+        <table id="csvTable">
+          <!-- Table will be rendered here -->
+        </table>
+      </div>
+      
+      <div class="pagination" id="paginationControls" style="display:none;">
+        <!-- Pagination controls will be added here -->
+      </div>
+    </div>
+
+    <div id="jsonPreviewCard" class="card" style="display:none;">
+      <h2 class="section-title">JSON Preview</h2>
+      <div class="muted" style="margin-bottom: 12px;">Preview of the data as JSON (first 10 rows):</div>
+      <div id="jsonPreview" class="json-preview"></div>
+      <div class="export-options">
+        <button id="copyJsonBtn">Copy JSON to Clipboard</button>
+        <button id="downloadJsonBtn">Download Full JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== OAuth Config =====
+    const clientId = 'fe305808-b368-4547-8af9-325d28d552bb';
+    const redirectUri = 'https://gmcglynn88.github.io/Gamification-Upload/';
+    const oauthUrl = `https://login.mypurecloud.ie/oauth/authorize?client_id=${encodeURIComponent(clientId)}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}`;
+
+    console.log('OAuth Configuration:');
+    console.log('- Client ID:', clientId);
+    console.log('- Redirect URI:', redirectUri);
+    console.log('- Full OAuth URL:', oauthUrl);
+
+    let accessToken = null;
+    let csvData = [];
+    let filteredData = [];
+    let currentHeaders = [];
+    let currentPage = 1;
+    const rowsPerPage = 50;
+
+    // ===== Auth bootstrap =====
+    document.addEventListener('DOMContentLoaded', () => {
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      const qparams = new URLSearchParams(window.location.search);
+
+      const oauthError = params.get('error') || qparams.get('error');
+      const oauthErrorDesc = params.get('error_description') || qparams.get('error_description');
+
+      if (oauthError) {
+        document.getElementById('auth-message').textContent = `OAuth error: ${oauthErrorDesc || oauthError}`;
+        document.getElementById('auth-message').className = 'error-message';
+        console.error('OAuth error details:', { error: oauthError, description: oauthErrorDesc });
+        return;
+      }
+      
+      accessToken = params.get('access_token');
+
+      if (accessToken) {
+        sessionStorage.setItem('purecloud_token', accessToken);
+        window.location.hash = '';
+        initializeApplication();
+      } else if (sessionStorage.getItem('purecloud_token')) {
+        accessToken = sessionStorage.getItem('purecloud_token');
+        initializeApplication();
+      } else {
+        console.log('Initiating OAuth flow with:', { clientId, redirectUri });
+        window.location.href = oauthUrl;
+      }
+    });
+    
+    function showMessage(msg, type='error'){
+      const box = document.getElementById('messageContainer');
+      box.innerHTML = `<div class="${type}-message">${msg}</div>`;
+      box.style.display = 'block';
+      if (type === 'success') setTimeout(()=> box.style.display='none', 5000);
+    }
+    
+    function initializeApplication() {
+      document.getElementById('auth-message').textContent = 'Authenticated with Genesys Cloud successfully!';
+      document.getElementById('authCard').style.display = 'none';
+      document.getElementById('appContent').style.display = 'block';
+      
+      // Setup event listeners
+      setupEventListeners();
+      
+      // Display welcome message
+      showMessage('Welcome! You are authenticated with Genesys Cloud. Upload a CSV file to begin.', 'success');
+    }
+    
+    function setupEventListeners() {
+      // File upload area click
+      document.getElementById('fileUploadArea').addEventListener('click', () => {
+        document.getElementById('fileInput').click();
+      });
+      
+      // File input change
+      document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+      
+      // Drag and drop
+      const uploadArea = document.getElementById('fileUploadArea');
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = 'var(--primary-color)';
+        uploadArea.style.background = '#f0f7f4';
+      });
+      
+      uploadArea.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = 'var(--border-color)';
+        uploadArea.style.background = 'var(--light-bg)';
+      });
+      
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          handleFile(files[0]);
+        }
+        uploadArea.style.borderColor = 'var(--border-color)';
+        uploadArea.style.background = 'var(--light-bg)';
+      });
+      
+      // Export buttons
+      document.getElementById('exportJsonBtn').addEventListener('click', exportAsJson);
+      document.getElementById('exportCsvBtn').addEventListener('click', exportAsCsv);
+      document.getElementById('clearDataBtn').addEventListener('click', clearData);
+      document.getElementById('copyJsonBtn').addEventListener('click', copyJsonToClipboard);
+      document.getElementById('downloadJsonBtn').addEventListener('click', downloadJson);
+    }
+    
+    // Handle file selection
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      handleFile(file);
+    }
+    
+    function handleFile(file) {
+      if (!file) return;
+      
+      // Check file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        showMessage('File size exceeds 10MB limit', 'error');
+        return;
+      }
+      
+      // Check if it's a CSV file
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+        showMessage('Please select a CSV file', 'error');
+        return;
+      }
+      
+      // Update UI
+      document.getElementById('fileName').textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      document.getElementById('fileUploadArea').classList.add('has-file');
+      
+      // Read and process CSV
+      readCSVFile(file);
+    }
+    
+    // Read CSV file
+    function readCSVFile(file) {
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        const csvText = e.target.result;
+        parseCSV(csvText);
+      };
+      
+      reader.onerror = function() {
+        showMessage('Error reading file', 'error');
+      };
+      
+      reader.readAsText(file, 'UTF-8');
+    }
+    
+    // Parse CSV data
+    function parseCSV(csvText) {
+      try {
+        // Handle different line endings
+        const lines = csvText.split(/\r\n|\n|\r/);
+        if (lines.length === 0) {
+          showMessage('CSV file is empty', 'error');
+          return;
+        }
+        
+        // Get headers (first line) and clean them
+        currentHeaders = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        
+        // Parse data rows
+        csvData = [];
+        
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue; // Skip empty lines
+          
+          // Parse CSV line with quoted values handling
+          const values = parseCSVLine(line);
+          
+          // Create row object
+          const row = {};
+          let hasData = false;
+          
+          currentHeaders.forEach((header, index) => {
+            const value = values[index] || '';
+            row[header] = value.trim();
+            if (value.trim()) hasData = true;
+          });
+          
+          if (hasData) {
+            csvData.push(row);
+          }
+        }
+        
+        if (csvData.length === 0) {
+          showMessage('No valid data found in CSV file', 'error');
+          return;
+        }
+        
+        console.log(`Parsed ${csvData.length} rows from CSV with ${currentHeaders.length} columns`);
+        
+        // Initialize filtered data
+        filteredData = [...csvData];
+        
+        // Show data
+        showDataStats();
+        createColumnFilters();
+        renderTable();
+        showJsonPreview();
+        
+        // Show data sections
+        document.getElementById('dataStats').style.display = 'block';
+        document.getElementById('dataControls').style.display = 'block';
+        document.getElementById('dataTableCard').style.display = 'block';
+        document.getElementById('jsonPreviewCard').style.display = 'block';
+        
+        showMessage(`Successfully loaded ${csvData.length} rows from CSV`, 'success');
+        
+        // Setup search functionality
+        setupSearch();
+        
+      } catch (error) {
+        console.error('Error parsing CSV:', error);
+        showMessage(`Error parsing CSV: ${error.message}`, 'error');
+      }
+    }
+    
+    // Parse a single CSV line with proper quoted value handling
+    function parseCSVLine(line) {
+      const values = [];
+      let currentValue = '';
+      let insideQuotes = false;
+      
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+        
+        if (char === '"') {
+          if (insideQuotes && nextChar === '"') {
+            // Escaped quote inside quoted string
+            currentValue += '"';
+            i++; // Skip next character
+          } else {
+            // Start or end of quoted string
+            insideQuotes = !insideQuotes;
+          }
+        } else if (char === ',' && !insideQuotes) {
+          // End of field
+          values.push(currentValue);
+          currentValue = '';
+        } else {
+          // Regular character
+          currentValue += char;
+        }
+      }
+      
+      // Add the last value
+      values.push(currentValue);
+      
+      return values;
+    }
+    
+    // Show data statistics
+    function showDataStats() {
+      const statsContainer = document.getElementById('statsContainer');
+      statsContainer.innerHTML = '';
+      
+      const stats = [
+        {
+          label: 'Total Rows',
+          value: csvData.length.toLocaleString(),
+          color: '#63AB8F'
+        },
+        {
+          label: 'Total Columns',
+          value: currentHeaders.length.toLocaleString(),
+          color: '#4A8C7D'
+        },
+        {
+          label: 'File Size',
+          value: `${(JSON.stringify(csvData).length / 1024).toFixed(1)} KB`,
+          color: '#3A7C6D'
+        }
+      ];
+      
+      // Add column count stats
+      currentHeaders.forEach((header, index) => {
+        const nonEmptyCount = csvData.filter(row => row[header] && row[header].trim()).length;
+        const fillRate = ((nonEmptyCount / csvData.length) * 100).toFixed(1);
+        
+        stats.push({
+          label: `"${header}" fill rate`,
+          value: `${fillRate}%`,
+          color: index % 2 === 0 ? '#6CAB9F' : '#5A9B8D'
+        });
+      });
+      
+      // Create stat cards
+      stats.forEach(stat => {
+        const statCard = document.createElement('div');
+        statCard.className = 'stat-card';
+        statCard.innerHTML = `
+          <div class="stat-value" style="color: ${stat.color}">${stat.value}</div>
+          <div class="stat-label">${stat.label}</div>
+        `;
+        statsContainer.appendChild(statCard);
+      });
+    }
+    
+    // Create column filters
+    function createColumnFilters() {
+      const columnFilters = document.getElementById('columnFilters');
+      columnFilters.innerHTML = '';
+      
+      currentHeaders.forEach(header => {
+        const filterDiv = document.createElement('div');
+        filterDiv.className = 'column-filter';
+        filterDiv.innerHTML = `
+          <label for="filter-${header}" style="font-size: 12px;">${header}:</label>
+          <input type="text" 
+                 id="filter-${header}" 
+                 class="column-filter-input" 
+                 placeholder="Filter ${header}..."
+                 data-column="${header}">
+        `;
+        columnFilters.appendChild(filterDiv);
+      });
+      
+      // Add event listeners to filter inputs
+      document.querySelectorAll('.column-filter-input').forEach(input => {
+        input.addEventListener('input', applyFilters);
+      });
+    }
+    
+    // Setup search functionality
+    function setupSearch() {
+      const searchInput = document.getElementById('searchInput');
+      searchInput.addEventListener('input', applyFilters);
+    }
+    
+    // Apply all filters and search
+    function applyFilters() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const filterInputs = document.querySelectorAll('.column-filter-input');
+      
+      filteredData = csvData.filter(row => {
+        // Apply global search
+        if (searchTerm) {
+          const rowValues = Object.values(row).join(' ').toLowerCase();
+          if (!rowValues.includes(searchTerm)) {
+            return false;
+          }
+        }
+        
+        // Apply column-specific filters
+        for (const input of filterInputs) {
+          const column = input.dataset.column;
+          const filterValue = input.value.toLowerCase();
+          
+          if (filterValue && row[column]) {
+            const cellValue = row[column].toString().toLowerCase();
+            if (!cellValue.includes(filterValue)) {
+              return false;
+            }
+          }
+        }
+        
+        return true;
+      });
+      
+      currentPage = 1;
+      renderTable();
+      showJsonPreview();
+    }
+    
+    // Render table with pagination
+    function renderTable() {
+      const table = document.getElementById('csvTable');
+      const tableInfo = document.getElementById('tableInfo');
+      const paginationControls = document.getElementById('paginationControls');
+      
+      // Clear table
+      table.innerHTML = '';
+      
+      // Update table info
+      tableInfo.textContent = `Showing ${filteredData.length} rows (${csvData.length} total). `;
+      if (filteredData.length < csvData.length) {
+        tableInfo.textContent += `${csvData.length - filteredData.length} rows filtered out.`;
+      }
+      
+      if (filteredData.length === 0) {
+        table.innerHTML = '<tr><td colspan="' + currentHeaders.length + '" style="text-align: center; padding: 40px;">No data matches your filters</td></tr>';
+        paginationControls.style.display = 'none';
+        return;
+      }
+      
+      // Create header row
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      
+      currentHeaders.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        th.style.cursor = 'pointer';
+        th.addEventListener('click', () => sortTable(header));
+        th.title = `Click to sort by ${header}`;
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+      
+      // Calculate pagination
+      const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+      const startIndex = (currentPage - 1) * rowsPerPage;
+      const endIndex = Math.min(startIndex + rowsPerPage, filteredData.length);
+      const pageData = filteredData.slice(startIndex, endIndex);
+      
+      // Create table body
+      const tbody = document.createElement('tbody');
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      
+      pageData.forEach((row, rowIndex) => {
+        const tr = document.createElement('tr');
+        
+        currentHeaders.forEach(header => {
+          const td = document.createElement('td');
+          let cellValue = row[header] || '';
+          
+          // Highlight search matches
+          if (searchTerm && cellValue.toLowerCase().includes(searchTerm)) {
+            td.innerHTML = highlightText(cellValue, searchTerm);
+            td.classList.add('highlight');
+          } else {
+            td.textContent = cellValue;
+          }
+          
+          td.title = cellValue;
+          tr.appendChild(td);
+        });
+        
+        tbody.appendChild(tr);
+      });
+      
+      table.appendChild(tbody);
+      
+      // Show pagination if needed
+      if (totalPages > 1) {
+        renderPagination(totalPages);
+        paginationControls.style.display = 'flex';
+      } else {
+        paginationControls.style.display = 'none';
+      }
+    }
+    
+    // Highlight search matches in text
+    function highlightText(text, searchTerm) {
+      const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+      return text.replace(regex, '<mark>$1</mark>');
+    }
+    
+    // Render pagination controls
+    function renderPagination(totalPages) {
+      const paginationControls = document.getElementById('paginationControls');
+      paginationControls.innerHTML = '';
+      
+      // Previous button
+      const prevButton = document.createElement('button');
+      prevButton.textContent = '←';
+      prevButton.disabled = currentPage === 1;
+      prevButton.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTable();
+        }
+      });
+      paginationControls.appendChild(prevButton);
+      
+      // Page numbers
+      const maxVisiblePages = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+      }
+      
+      if (startPage > 1) {
+        const firstButton = document.createElement('button');
+        firstButton.textContent = '1';
+        firstButton.addEventListener('click', () => {
+          currentPage = 1;
+          renderTable();
+        });
+        paginationControls.appendChild(firstButton);
+        
+        if (startPage > 2) {
+          const ellipsis = document.createElement('span');
+          ellipsis.textContent = '...';
+          paginationControls.appendChild(ellipsis);
+        }
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        if (i === currentPage) {
+          pageButton.classList.add('active');
+        }
+        pageButton.addEventListener('click', () => {
+          currentPage = i;
+          renderTable();
+        });
+        paginationControls.appendChild(pageButton);
+      }
+      
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          const ellipsis = document.createElement('span');
+          ellipsis.textContent = '...';
+          paginationControls.appendChild(ellipsis);
+        }
+        
+        const lastButton = document.createElement('button');
+        lastButton.textContent = totalPages;
+        lastButton.addEventListener('click', () => {
+          currentPage = totalPages;
+          renderTable();
+        });
+        paginationControls.appendChild(lastButton);
+      }
+      
+      // Next button
+      const nextButton = document.createElement('button');
+      nextButton.textContent = '→';
+      nextButton.disabled = currentPage === totalPages;
+      nextButton.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderTable();
+        }
+      });
+      paginationControls.appendChild(nextButton);
+    }
+    
+    // Sort table by column
+    function sortTable(column) {
+      filteredData.sort((a, b) => {
+        const valA = a[column] || '';
+        const valB = b[column] || '';
+        
+        // Try numeric comparison first
+        const numA = parseFloat(valA);
+        const numB = parseFloat(valB);
+        
+        if (!isNaN(numA) && !isNaN(numB)) {
+          return numA - numB;
+        }
+        
+        // Fall back to string comparison
+        return valA.toString().localeCompare(valB.toString());
+      });
+      
+      renderTable();
+    }
+    
+    // Show JSON preview
+    function showJsonPreview() {
+      const jsonPreview = document.getElementById('jsonPreview');
+      
+      // Create preview with first 10 rows
+      const previewData = filteredData.slice(0, 10);
+      
+      jsonPreview.textContent = JSON.stringify(previewData, null, 2);
+    }
+    
+    // Export as JSON
+    function exportAsJson() {
+      const dataStr = JSON.stringify(filteredData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'exported_data.json';
+      link.click();
+      
+      URL.revokeObjectURL(url);
+      showMessage('JSON file downloaded successfully!', 'success');
+    }
+    
+    // Export as CSV
+    function exportAsCsv() {
+      if (filteredData.length === 0) {
+        showMessage('No data to export', 'error');
+        return;
+      }
+      
+      // Create CSV content
+      let csvContent = currentHeaders.join(',') + '\n';
+      
+      filteredData.forEach(row => {
+        const rowValues = currentHeaders.map(header => {
+          const value = row[header] || '';
+          // Escape quotes and wrap in quotes if contains comma or quote
+          if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+            return '"' + value.replace(/"/g, '""') + '"';
+          }
+          return value;
+        });
+        csvContent += rowValues.join(',') + '\n';
+      });
+      
+      const dataBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'exported_data.csv';
+      link.click();
+      
+      URL.revokeObjectURL(url);
+      showMessage('CSV file downloaded successfully!', 'success');
+    }
+    
+    // Clear all data
+    function clearData() {
+      if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+        csvData = [];
+        filteredData = [];
+        currentHeaders = [];
+        currentPage = 1;
+        
+        // Reset UI
+        document.getElementById('fileName').textContent = '';
+        document.getElementById('fileUploadArea').classList.remove('has-file');
+        document.getElementById('fileInput').value = '';
+        document.getElementById('dataStats').style.display = 'none';
+        document.getElementById('dataControls').style.display = 'none';
+        document.getElementById('dataTableCard').style.display = 'none';
+        document.getElementById('jsonPreviewCard').style.display = 'none';
+        document.getElementById('csvTable').innerHTML = '';
+        document.getElementById('jsonPreview').textContent = '';
+        
+        showMessage('All data cleared', 'success');
+      }
+    }
+    
+    // Copy JSON to clipboard
+    function copyJsonToClipboard() {
+      const jsonStr = JSON.stringify(filteredData, null, 2);
+      
+      navigator.clipboard.writeText(jsonStr).then(() => {
+        showMessage('JSON copied to clipboard!', 'success');
+      }).catch(err => {
+        showMessage('Failed to copy JSON: ' + err.message, 'error');
+      });
+    }
+    
+    // Download full JSON
+    function downloadJson() {
+      exportAsJson();
+    }
+  </script>
+</body>
+</html>
