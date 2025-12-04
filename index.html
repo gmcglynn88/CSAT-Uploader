@@ -87,7 +87,7 @@
     }
     
     /* Loading spinner */
-    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-in-out infinite; }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-inout infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading { display: flex; align-items: center; gap: 8px; }
     
@@ -773,14 +773,6 @@
             </div>
           </div>
           
-          <!-- Column Selector for Analytics -->
-          <div id="columnSelectorContainer" style="display: none; margin-top: 20px;">
-            <h3 style="margin-bottom: 10px; font-size: 16px;"><i class="bi bi-columns"></i> Select Columns for Analysis</h3>
-            <div class="column-selector" id="columnSelector">
-              <!-- Column checkboxes will be inserted here -->
-            </div>
-          </div>
-          
           <!-- Key Metrics -->
           <div class="analytics-section">
             <h3 class="analytics-section-title"><i class="bi bi-speedometer2"></i> Key Metrics</h3>
@@ -797,9 +789,6 @@
                 <div class="metric-title"><i class="bi bi-cloud-fill"></i> Word Cloud</div>
                 <div class="word-cloud-container" id="wordCloud">
                   <!-- Word cloud will be generated here -->
-                  <div style="text-align: center; padding: 50px 20px; color: #94a3b8;">
-                    Select a text column to generate word cloud
-                  </div>
                 </div>
                 <div style="margin-top: 10px; font-size: 12px; color: #64748b;">
                   <select id="wordCloudColumn" style="width: 100%; padding: 8px;">
@@ -812,9 +801,6 @@
                 <div class="metric-title"><i class="bi bi-percent"></i> Score Distribution</div>
                 <div id="scoreDistribution">
                   <!-- Score distribution will be generated here -->
-                  <div style="text-align: center; padding: 50px 20px; color: #94a3b8;">
-                    Select a score column to see distribution
-                  </div>
                 </div>
                 <div style="margin-top: 10px; font-size: 12px; color: #64748b;">
                   <select id="scoreColumn" style="width: 100%; padding: 8px;">
@@ -833,9 +819,6 @@
                 <div class="metric-title"><i class="bi bi-emoji-smile"></i> Sentiment Analysis</div>
                 <div id="sentimentAnalysis" style="padding: 20px 0;">
                   <!-- Sentiment analysis will be generated here -->
-                  <div style="text-align: center; padding: 30px 20px; color: #94a3b8;">
-                    Select a text column for sentiment analysis
-                  </div>
                 </div>
                 <div style="margin-top: 10px; font-size: 12px; color: #64748b;">
                   <select id="sentimentColumn" style="width: 100%; padding: 8px;">
@@ -848,9 +831,6 @@
                 <div class="metric-title"><i class="bi bi-star-fill"></i> Top Reviews</div>
                 <div id="topReviews" style="max-height: 300px; overflow-y: auto;">
                   <!-- Top reviews will be generated here -->
-                  <div style="text-align: center; padding: 50px 20px; color: #94a3b8;">
-                    Select text and score columns to see top reviews
-                  </div>
                 </div>
                 <div style="margin-top: 10px; font-size: 12px; color: #64748b; display: flex; gap: 10px;">
                   <select id="reviewTextColumn" style="flex: 1; padding: 8px;">
@@ -883,25 +863,6 @@
                   <!-- Data quality rows will be inserted here -->
                 </tbody>
               </table>
-            </div>
-          </div>
-          
-          <!-- Time Trends (if date column exists) -->
-          <div class="analytics-section" id="timeTrendsSection" style="display: none;">
-            <h3 class="analytics-section-title"><i class="bi bi-calendar-heart"></i> Time Trends</h3>
-            <div class="analytics-grid">
-              <div class="metric-card">
-                <div class="metric-title"><i class="bi bi-graph-up-arrow"></i> Daily Volume</div>
-                <div class="chart-container" id="dailyVolumeChart">
-                  <!-- Daily volume chart will be generated here -->
-                </div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-title"><i class="bi bi-arrow-up-right"></i> Score Trend</div>
-                <div class="chart-container" id="scoreTrendChart">
-                  <!-- Score trend chart will be generated here -->
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -1066,18 +1027,18 @@
       document.getElementById('applyDateFilter')?.addEventListener('click', applyDateFilter);
       document.getElementById('clearDateFilter')?.addEventListener('click', clearDateFilter);
       
-      // Analytics column selectors - FIX: Added change listeners
-      const wordCloudColumn = document.getElementById('wordCloudColumn');
-      const scoreColumn = document.getElementById('scoreColumn');
-      const sentimentColumn = document.getElementById('sentimentColumn');
-      const reviewTextColumn = document.getElementById('reviewTextColumn');
-      const reviewScoreColumn = document.getElementById('reviewScoreColumn');
-      
-      if (wordCloudColumn) wordCloudColumn.addEventListener('change', generateWordCloud);
-      if (scoreColumn) scoreColumn.addEventListener('change', generateScoreDistribution);
-      if (sentimentColumn) sentimentColumn.addEventListener('change', generateSentimentAnalysis);
-      if (reviewTextColumn) reviewTextColumn.addEventListener('change', updateTopReviews);
-      if (reviewScoreColumn) reviewScoreColumn.addEventListener('change', updateTopReviews);
+      // Analytics column selectors - FIXED: Added change listeners
+      document.addEventListener('change', function(e) {
+        if (e.target.id === 'wordCloudColumn') {
+          generateWordCloud();
+        } else if (e.target.id === 'scoreColumn') {
+          generateScoreDistribution();
+        } else if (e.target.id === 'sentimentColumn') {
+          generateSentimentAnalysis();
+        } else if (e.target.id === 'reviewTextColumn' || e.target.id === 'reviewScoreColumn') {
+          updateTopReviews();
+        }
+      });
       
       // Drag and drop
       const uploadArea = document.getElementById('fileUploadArea');
@@ -1110,12 +1071,9 @@
       document.getElementById('clearDataBtn').addEventListener('click', clearData);
       
       // Table search
-      const tableSearch = document.getElementById('tableSearch');
-      if (tableSearch) {
-        tableSearch.addEventListener('input', function(e) {
-          searchTable(e.target.value);
-        });
-      }
+      document.getElementById('tableSearch')?.addEventListener('input', function(e) {
+        searchTable(e.target.value);
+      });
     }
     
     // Tab switching function
@@ -1211,7 +1169,7 @@
       return bestDelimiter;
     }
     
-    // Parse CSV data
+    // Parse CSV data - FIXED: Now properly calls setupAnalytics
     function parseCSV(csvText) {
       try {
         // Reset data
@@ -1268,6 +1226,8 @@
         }
         
         console.log(`Parsed ${csvData.length} rows from CSV with ${currentHeaders.length} columns using delimiter: "${delimiter}"`);
+        console.log('Headers:', currentHeaders);
+        console.log('First row:', csvData[0]);
         
         // Set filtered data to all data initially
         filteredData = [...csvData];
@@ -1279,11 +1239,11 @@
         document.getElementById('dataTableCard').style.display = 'block';
         document.getElementById('tableToolbar').style.display = 'flex';
         
-        // Setup analytics - FIX: Call this to initialize analytics
-        setupAnalytics();
-        
-        // Generate initial analytics - FIX: Call this to populate analytics
-        updateAnalytics();
+        // Setup analytics IMMEDIATELY after data is loaded
+        setTimeout(() => {
+          setupAnalytics();
+          updateAnalytics(); // Generate initial analytics
+        }, 100);
         
         showMessage(`Successfully loaded ${csvData.length} rows from CSV (using "${delimiter === '\t' ? 'Tab' : delimiter}" delimiter)`, 'success');
         
@@ -1584,39 +1544,45 @@
       }
     }
     
-    // Setup analytics after data is loaded - FIX: Now properly called
+    // Setup analytics after data is loaded - FIXED: Now properly called
     function setupAnalytics() {
+      console.log('Setting up analytics with', filteredData.length, 'rows');
+      
       // Show analytics toolbar
       const analyticsToolbar = document.getElementById('analyticsToolbar');
-      if (analyticsToolbar) analyticsToolbar.style.display = 'flex';
+      if (analyticsToolbar) {
+        analyticsToolbar.style.display = 'flex';
+        console.log('Analytics toolbar shown');
+      }
       
       // Update analytics row count
       const analyticsRowCount = document.getElementById('analyticsRowCount');
-      if (analyticsRowCount) analyticsRowCount.textContent = `${filteredData.length} rows`;
+      if (analyticsRowCount) {
+        analyticsRowCount.textContent = `${filteredData.length} rows`;
+        console.log('Analytics row count updated:', filteredData.length);
+      }
       
-      // Populate column selectors
+      // Populate column selectors - CRITICAL FIX
       populateColumnSelectors();
       
       // Setup date range defaults
       setupDateRange();
     }
     
-    // Populate column selectors for analytics
+    // Populate column selectors for analytics - FIXED: Now works correctly
     function populateColumnSelectors() {
+      console.log('Populating column selectors with headers:', currentHeaders);
+      
       const wordCloudSelect = document.getElementById('wordCloudColumn');
       const scoreSelect = document.getElementById('scoreColumn');
       const sentimentSelect = document.getElementById('sentimentColumn');
       const reviewTextSelect = document.getElementById('reviewTextColumn');
       const reviewScoreSelect = document.getElementById('reviewScoreColumn');
       
-      if (!wordCloudSelect || !scoreSelect || !sentimentSelect || !reviewTextSelect || !reviewScoreSelect) {
-        console.error('Column selectors not found');
-        return;
-      }
-      
       // Clear existing options except first
       [wordCloudSelect, scoreSelect, sentimentSelect, reviewTextSelect, reviewScoreSelect].forEach(select => {
         if (select) {
+          // Keep only the first option (placeholder)
           while (select.options.length > 1) {
             select.remove(1);
           }
@@ -1635,39 +1601,62 @@
         
         // For score columns, try to identify numeric columns
         if (isColumnNumeric(header)) {
+          console.log('Found numeric column:', header);
           if (scoreSelect) scoreSelect.appendChild(option.cloneNode(true));
           if (reviewScoreSelect) reviewScoreSelect.appendChild(option.cloneNode(true));
         }
       });
       
+      console.log('Column selectors populated');
+      
       // Auto-select likely columns based on common names
       autoSelectCommonColumns();
+      
+      // Trigger initial generation
+      setTimeout(() => {
+        generateWordCloud();
+        generateScoreDistribution();
+        generateSentimentAnalysis();
+        updateTopReviews();
+      }, 100);
     }
     
     // Check if column is numeric
     function isColumnNumeric(columnName) {
-      const sampleValues = filteredData.slice(0, 10).map(row => row[columnName]);
+      if (!filteredData || filteredData.length === 0) return false;
+      
+      const sampleValues = filteredData.slice(0, Math.min(10, filteredData.length))
+        .map(row => row[columnName])
+        .filter(val => val !== undefined && val !== null && val !== '');
+      
+      if (sampleValues.length === 0) return false;
+      
       let numericCount = 0;
       
       sampleValues.forEach(value => {
-        if (value && !isNaN(value) && value.trim() !== '') {
+        const strValue = String(value).trim();
+        // Check if it's a number (including decimals and percentages)
+        if (!isNaN(strValue) && strValue !== '' && !strValue.includes(' ')) {
           numericCount++;
         }
       });
       
-      return numericCount > 5; // If more than 5 of first 10 are numeric
+      return numericCount > sampleValues.length * 0.5; // If more than 50% are numeric
     }
     
     // Auto-select common column names
     function autoSelectCommonColumns() {
-      const commonScoreNames = ['score', 'rating', 'percent', 'percentage', 'csat', 'nps', 'satisfaction'];
-      const commonTextNames = ['review', 'comment', 'feedback', 'text', 'response', 'note'];
+      console.log('Auto-selecting common columns');
+      
+      const commonScoreNames = ['score', 'rating', 'percent', 'percentage', 'csat', 'nps', 'satisfaction', 'rating', 'overall'];
+      const commonTextNames = ['review', 'comment', 'feedback', 'text', 'response', 'note', 'description', 'remarks'];
       
       currentHeaders.forEach(header => {
         const lowerHeader = header.toLowerCase();
         
         // Auto-select score column
         if (commonScoreNames.some(name => lowerHeader.includes(name))) {
+          console.log('Auto-selecting score column:', header);
           const scoreSelect = document.getElementById('scoreColumn');
           const reviewScoreSelect = document.getElementById('reviewScoreColumn');
           if (scoreSelect) scoreSelect.value = header;
@@ -1676,6 +1665,7 @@
         
         // Auto-select text column
         if (commonTextNames.some(name => lowerHeader.includes(name))) {
+          console.log('Auto-selecting text column:', header);
           const wordCloudSelect = document.getElementById('wordCloudColumn');
           const sentimentSelect = document.getElementById('sentimentColumn');
           const reviewTextSelect = document.getElementById('reviewTextColumn');
@@ -1699,10 +1689,6 @@
       });
       
       if (dateColumns.length > 0) {
-        // Show time trends section
-        const timeTrendsSection = document.getElementById('timeTrendsSection');
-        if (timeTrendsSection) timeTrendsSection.style.display = 'block';
-        
         // Set default date range to last 30 days if possible
         const today = new Date();
         const thirtyDaysAgo = new Date();
@@ -1849,16 +1835,17 @@
       return null;
     }
     
-    // Update all analytics - FIX: This function now properly updates all analytics
+    // Update all analytics
     function updateAnalytics() {
       console.log('Updating analytics with', filteredData.length, 'rows');
       updateKeyMetrics();
-      generateWordCloud();
-      generateScoreDistribution();
-      generateSentimentAnalysis();
-      updateTopReviews();
       updateDataQuality();
-      updateTimeTrends();
+      
+      // These will be triggered by the dropdown changes
+      if (document.getElementById('wordCloudColumn').value) generateWordCloud();
+      if (document.getElementById('scoreColumn').value) generateScoreDistribution();
+      if (document.getElementById('sentimentColumn').value) generateSentimentAnalysis();
+      if (document.getElementById('reviewTextColumn').value && document.getElementById('reviewScoreColumn').value) updateTopReviews();
     }
     
     // Update key metrics
@@ -1881,7 +1868,13 @@
       
       if (scoreColumn) {
         const scores = filteredData
-          .map(row => parseFloat(row[scoreColumn]))
+          .map(row => {
+            const val = row[scoreColumn];
+            if (!val) return NaN;
+            // Remove % sign if present
+            const cleanVal = String(val).replace('%', '').trim();
+            return parseFloat(cleanVal);
+          })
           .filter(score => !isNaN(score));
         
         if (scores.length > 0) {
@@ -1897,7 +1890,7 @@
       
       filteredData.forEach(row => {
         currentHeaders.forEach(header => {
-          if (row[header] && row[header].trim() !== '') {
+          if (row[header] && String(row[header]).trim() !== '') {
             nonEmptyCells++;
           }
         });
@@ -1915,8 +1908,8 @@
         
         <div class="metric-card">
           <div class="metric-title"><i class="bi bi-percent"></i> Average Score</div>
-          <div class="metric-value">${avgScore}</div>
-          <div class="metric-change">${scoreCount > 0 ? `Based on ${scoreCount} scores` : 'No score column selected'}</div>
+          <div class="metric-value">${avgScore}${avgScore !== 'N/A' ? '%' : ''}</div>
+          <div class="metric-change">${scoreCount > 0 ? `Based on ${scoreCount} scores` : 'Select score column'}</div>
         </div>
         
         <div class="metric-card">
@@ -1935,8 +1928,9 @@
       `;
     }
     
-    // Generate word cloud
+    // Generate word cloud - FIXED: Now works correctly
     function generateWordCloud() {
+      console.log('Generating word cloud');
       const wordCloudContainer = document.getElementById('wordCloud');
       if (!wordCloudContainer) {
         console.error('Word cloud container not found');
@@ -1958,7 +1952,7 @@
       // Extract text from selected column
       const textData = filteredData
         .map(row => row[column] || '')
-        .filter(text => text.trim() !== '')
+        .filter(text => text && String(text).trim() !== '')
         .join(' ')
         .toLowerCase();
       
@@ -1970,6 +1964,8 @@
         `;
         return;
       }
+      
+      console.log('Text data length:', textData.length);
       
       // Process text: remove common words, count frequencies
       const stopWords = new Set([
@@ -2002,6 +1998,8 @@
       const topWords = Object.entries(wordCounts)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 50);
+      
+      console.log('Top words:', topWords.length);
       
       if (topWords.length === 0) {
         wordCloudContainer.innerHTML = `
@@ -2047,10 +2045,13 @@
         
         wordCloudContainer.appendChild(wordElement);
       });
+      
+      console.log('Word cloud generated with', topWords.length, 'words');
     }
     
-    // Generate score distribution
+    // Generate score distribution - FIXED: Now works correctly
     function generateScoreDistribution() {
+      console.log('Generating score distribution');
       const scoreContainer = document.getElementById('scoreDistribution');
       if (!scoreContainer) {
         console.error('Score distribution container not found');
@@ -2071,13 +2072,21 @@
       
       // Extract scores
       const scores = filteredData
-        .map(row => parseFloat(row[column]))
-        .filter(score => !isNaN(score));
+        .map(row => {
+          const val = row[column];
+          if (!val) return NaN;
+          // Remove % sign if present and convert to number
+          const cleanVal = String(val).replace('%', '').trim();
+          return parseFloat(cleanVal);
+        })
+        .filter(score => !isNaN(score) && score >= 0 && score <= 100);
+      
+      console.log('Scores found:', scores.length);
       
       if (scores.length === 0) {
         scoreContainer.innerHTML = `
           <div style="text-align: center; padding: 50px 20px; color: #94a3b8;">
-            No numeric scores found in selected column
+            No numeric scores (0-100%) found in selected column
           </div>
         `;
         return;
@@ -2150,10 +2159,12 @@
       });
       
       scoreContainer.innerHTML = html;
+      console.log('Score distribution generated');
     }
     
-    // Generate sentiment analysis
+    // Generate sentiment analysis - FIXED: Now works correctly
     function generateSentimentAnalysis() {
+      console.log('Generating sentiment analysis');
       const sentimentContainer = document.getElementById('sentimentAnalysis');
       if (!sentimentContainer) {
         console.error('Sentiment analysis container not found');
@@ -2175,7 +2186,9 @@
       // Extract text from selected column
       const texts = filteredData
         .map(row => row[column] || '')
-        .filter(text => text.trim() !== '');
+        .filter(text => text && String(text).trim() !== '');
+      
+      console.log('Texts found for sentiment:', texts.length);
       
       if (texts.length === 0) {
         sentimentContainer.innerHTML = `
@@ -2190,13 +2203,15 @@
       const positiveWords = [
         'good', 'great', 'excellent', 'amazing', 'awesome', 'perfect', 'love', 'liked',
         'happy', 'satisfied', 'pleased', 'wonderful', 'fantastic', 'best', 'helpful',
-        'friendly', 'quick', 'fast', 'easy', 'smooth', 'perfect', 'outstanding'
+        'friendly', 'quick', 'fast', 'easy', 'smooth', 'perfect', 'outstanding',
+        'thanks', 'thank', 'appreciate', 'good job', 'well done', 'impressive'
       ];
       
       const negativeWords = [
         'bad', 'poor', 'terrible', 'awful', 'horrible', 'hate', 'dislike', 'angry',
         'unhappy', 'dissatisfied', 'disappointed', 'frustrated', 'slow', 'difficult',
-        'hard', 'complicated', 'broken', 'failed', 'error', 'issue', 'problem', 'wrong'
+        'hard', 'complicated', 'broken', 'failed', 'error', 'issue', 'problem', 'wrong',
+        'worst', 'waste', 'useless', 'terrible', 'awful', 'horrible', 'ridiculous'
       ];
       
       let positiveCount = 0;
@@ -2204,7 +2219,7 @@
       let neutralCount = 0;
       
       texts.forEach(text => {
-        const lowerText = text.toLowerCase();
+        const lowerText = String(text).toLowerCase();
         let positiveMatches = 0;
         let negativeMatches = 0;
         
@@ -2266,10 +2281,13 @@
           </div>
         </div>
       `;
+      
+      console.log('Sentiment analysis generated');
     }
     
-    // Update top reviews
+    // Update top reviews - FIXED: Now works correctly
     function updateTopReviews() {
+      console.log('Updating top reviews');
       const topReviewsContainer = document.getElementById('topReviews');
       if (!topReviewsContainer) {
         console.error('Top reviews container not found');
@@ -2295,17 +2313,19 @@
       const reviews = filteredData
         .map(row => ({
           text: row[textColumn] || '',
-          score: parseFloat(row[scoreColumn]) || 0,
+          score: parseFloat(String(row[scoreColumn]).replace('%', '').trim()) || 0,
           id: Math.random().toString(36).substr(2, 9)
         }))
-        .filter(review => review.text.trim() !== '' && !isNaN(review.score))
+        .filter(review => review.text.trim() !== '' && !isNaN(review.score) && review.score >= 0 && review.score <= 100)
         .sort((a, b) => b.score - a.score)
         .slice(0, 10); // Top 10 reviews
+      
+      console.log('Reviews found:', reviews.length);
       
       if (reviews.length === 0) {
         topReviewsContainer.innerHTML = `
           <div style="text-align: center; padding: 50px 20px; color: #94a3b8;">
-            No reviews found with both text and score
+            No reviews found with both text and valid scores (0-100%)
           </div>
         `;
         return;
@@ -2343,6 +2363,8 @@
         
         topReviewsContainer.appendChild(reviewCard);
       });
+      
+      console.log('Top reviews generated');
     }
     
     // Toggle review text expansion
@@ -2373,22 +2395,26 @@
       
       currentHeaders.forEach(header => {
         const values = filteredData.map(row => row[header] || '');
-        const nonEmpty = values.filter(v => v.trim() !== '');
+        const nonEmpty = values.filter(v => String(v).trim() !== '');
         const empty = values.length - nonEmpty.length;
         const completeness = values.length > 0 ? Math.round((nonEmpty.length / values.length) * 100) : 0;
         
         // Count unique values
-        const uniqueValues = new Set(nonEmpty.map(v => v.toLowerCase().trim()));
+        const uniqueValues = new Set(nonEmpty.map(v => String(v).toLowerCase().trim()));
         
         // Determine data type
         let dataType = 'Text';
         const sampleValues = nonEmpty.slice(0, 10);
         
         if (sampleValues.length > 0) {
-          const numericCount = sampleValues.filter(v => !isNaN(v) && v.trim() !== '' && v.indexOf(' ') === -1).length;
+          const numericCount = sampleValues.filter(v => {
+            const strVal = String(v).replace('%', '').trim();
+            return !isNaN(strVal) && strVal !== '' && !strVal.includes(' ');
+          }).length;
+          
           const dateCount = sampleValues.filter(v => 
-            v && (v.match(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/) || 
-                 v.match(/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/))
+            v && (String(v).match(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/) || 
+                 String(v).match(/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/))
           ).length;
           
           if (dateCount / sampleValues.length > 0.7) {
@@ -2416,43 +2442,7 @@
       });
       
       dataQualityBody.innerHTML = html;
-    }
-    
-    // Update time trends
-    function updateTimeTrends() {
-      // This would be implemented with a charting library
-      // For now, we'll just show a placeholder
-      const dateColumn = findDateColumn();
-      const timeTrendsSection = document.getElementById('timeTrendsSection');
-      
-      if (dateColumn && timeTrendsSection) {
-        // Show time trends section
-        timeTrendsSection.style.display = 'block';
-        
-        // Placeholder for charts
-        const dailyVolumeChart = document.getElementById('dailyVolumeChart');
-        const scoreTrendChart = document.getElementById('scoreTrendChart');
-        
-        if (dailyVolumeChart) {
-          dailyVolumeChart.innerHTML = `
-            <div style="text-align: center; padding: 100px 20px; color: #94a3b8;">
-              <i class="bi bi-bar-chart" style="font-size: 48px; display: block; margin-bottom: 10px;"></i>
-              Daily volume chart would appear here with chart.js integration
-            </div>
-          `;
-        }
-        
-        if (scoreTrendChart) {
-          scoreTrendChart.innerHTML = `
-            <div style="text-align: center; padding: 100px 20px; color: #94a3b8;">
-              <i class="bi bi-graph-up" style="font-size: 48px; display: block; margin-bottom: 10px;"></i>
-              Score trend chart would appear here with chart.js integration
-            </div>
-          `;
-        }
-      } else if (timeTrendsSection) {
-        timeTrendsSection.style.display = 'none';
-      }
+      console.log('Data quality table updated');
     }
     
     // Update selected cell count
@@ -2483,7 +2473,7 @@
         const rowValues = currentHeaders.map(header => {
           const value = row[header] || '';
           // Escape quotes and wrap in quotes if contains delimiter or quotes
-          const escapedValue = value.replace(/"/g, '""');
+          const escapedValue = String(value).replace(/"/g, '""');
           if (escapedValue.includes(exportDelimiter) || escapedValue.includes('"') || escapedValue.includes('\n') || escapedValue.includes('\r')) {
             return `"${escapedValue}"`;
           }
@@ -2537,7 +2527,6 @@
         const sentimentAnalysis = document.getElementById('sentimentAnalysis');
         const topReviews = document.getElementById('topReviews');
         const dataQualityBody = document.getElementById('dataQualityBody');
-        const timeTrendsSection = document.getElementById('timeTrendsSection');
         
         if (keyMetrics) keyMetrics.innerHTML = '';
         if (wordCloud) wordCloud.innerHTML = '';
@@ -2545,7 +2534,18 @@
         if (sentimentAnalysis) sentimentAnalysis.innerHTML = '';
         if (topReviews) topReviews.innerHTML = '';
         if (dataQualityBody) dataQualityBody.innerHTML = '';
-        if (timeTrendsSection) timeTrendsSection.style.display = 'none';
+        
+        // Reset dropdowns
+        const dropdowns = ['wordCloudColumn', 'scoreColumn', 'sentimentColumn', 'reviewTextColumn', 'reviewScoreColumn'];
+        dropdowns.forEach(id => {
+          const dropdown = document.getElementById(id);
+          if (dropdown) {
+            while (dropdown.options.length > 1) {
+              dropdown.remove(1);
+            }
+            dropdown.value = '';
+          }
+        });
         
         // Switch back to data tab
         switchTab('dataTab');
