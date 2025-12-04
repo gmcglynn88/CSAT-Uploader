@@ -33,7 +33,7 @@
 
     #messageContainer{display:none;margin-top:12px}
     .error-message{color:#b4231a;background:#fee2e2;border:1px solid #fecaca;padding:10px;border-radius:6px}
-    .success-message{color:#14532d;background:#dcfce7;border:1px solid #bbf7d0;padding:10px;border-radius:6px}
+    .success-message{color:#14532d;background:#dcfce7;border:1px solid #bbf7d0;padding:10px;border-radius=6px}
     .info-message{color:#6b4e16;background:#fff7ed;border:1px solid #ffedd5;padding:10px;border-radius:6px}
 
     .file-upload-area{
@@ -87,7 +87,7 @@
     }
     
     /* Loading spinner */
-    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-inout infinite; }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-in-out infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading { display: flex; align-items: center; gap: 8px; }
     
@@ -525,29 +525,7 @@
       color: #92400e;
     }
     
-    /* Data table in analytics */
-    .analytics-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-    
-    .analytics-table th {
-      text-align: left;
-      padding: 10px;
-      background: #f8fafc;
-      border-bottom: 2px solid #e2e8f0;
-      font-weight: 600;
-    }
-    
-    .analytics-table td {
-      padding: 10px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    
-    .analytics-table tr:hover {
-      background: #f0f9ff;
-    }
+    /* Data table in analytics - REMOVED as requested */
     
     /* Top reviews */
     .review-card {
@@ -586,24 +564,6 @@
       cursor: pointer;
       font-size: 12px;
       font-weight: 600;
-    }
-    
-    /* Column selector for analytics */
-    .column-selector {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    
-    .column-checkbox {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .column-checkbox input {
-      margin: 0;
     }
     
     /* Responsive adjustments */
@@ -788,7 +748,9 @@
               <div class="metric-card">
                 <div class="metric-title"><i class="bi bi-cloud-fill"></i> Word Cloud</div>
                 <div class="word-cloud-container" id="wordCloud">
-                  <!-- Word cloud will be generated here -->
+                  <div style="text-align: center; padding: 50px 20px; color: #94a3b8;">
+                    Select a text column to generate word cloud
+                  </div>
                 </div>
                 <div style="margin-top: 10px; font-size: 12px; color: #64748b;">
                   <select id="wordCloudColumn" style="width: 100%; padding: 8px;">
@@ -800,7 +762,9 @@
               <div class="metric-card">
                 <div class="metric-title"><i class="bi bi-percent"></i> Score Distribution</div>
                 <div id="scoreDistribution">
-                  <!-- Score distribution will be generated here -->
+                  <div style="text-align: center; padding: 50px 20px; color: #94a3b8;">
+                    Select a score column to see distribution
+                  </div>
                 </div>
                 <div style="margin-top: 10px; font-size: 12px; color: #64748b;">
                   <select id="scoreColumn" style="width: 100%; padding: 8px;">
@@ -818,7 +782,9 @@
               <div class="metric-card">
                 <div class="metric-title"><i class="bi bi-emoji-smile"></i> Sentiment Analysis</div>
                 <div id="sentimentAnalysis" style="padding: 20px 0;">
-                  <!-- Sentiment analysis will be generated here -->
+                  <div style="text-align: center; padding: 30px 20px; color: #94a3b8;">
+                    Select a text column for sentiment analysis
+                  </div>
                 </div>
                 <div style="margin-top: 10px; font-size: 12px; color: #64748b;">
                   <select id="sentimentColumn" style="width: 100%; padding: 8px;">
@@ -830,7 +796,9 @@
               <div class="metric-card">
                 <div class="metric-title"><i class="bi bi-star-fill"></i> Top Reviews</div>
                 <div id="topReviews" style="max-height: 300px; overflow-y: auto;">
-                  <!-- Top reviews will be generated here -->
+                  <div style="text-align: center; padding: 50px 20px; color: #94a3b8;">
+                    Select text and score columns to see top reviews
+                  </div>
                 </div>
                 <div style="margin-top: 10px; font-size: 12px; color: #64748b; display: flex; gap: 10px;">
                   <select id="reviewTextColumn" style="flex: 1; padding: 8px;">
@@ -843,28 +811,6 @@
               </div>
             </div>
           </div>
-          
-          <!-- Data Quality and Column Analysis -->
-          <div class="analytics-section">
-            <h3 class="analytics-section-title"><i class="bi bi-clipboard-data"></i> Data Quality</h3>
-            <div class="table-container">
-              <table class="analytics-table" id="dataQualityTable">
-                <thead>
-                  <tr>
-                    <th>Column Name</th>
-                    <th>Data Type</th>
-                    <th>Non-Empty Values</th>
-                    <th>Empty Values</th>
-                    <th>Completeness</th>
-                    <th>Unique Values</th>
-                  </tr>
-                </thead>
-                <tbody id="dataQualityBody">
-                  <!-- Data quality rows will be inserted here -->
-                </tbody>
-              </table>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -875,11 +821,6 @@
     const clientId = 'fe305808-b368-4547-8af9-325d28d552bb';
     const redirectUri = 'https://gmcglynn88.github.io/CSAT-Uploader/';
     const oauthUrl = `https://login.mypurecloud.ie/oauth/authorize?client_id=${encodeURIComponent(clientId)}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}`;
-
-    console.log('OAuth Configuration:');
-    console.log('- Client ID:', clientId);
-    console.log('- Redirect URI:', redirectUri);
-    console.log('- Full OAuth URL:', oauthUrl);
 
     let accessToken = null;
     let csvData = [];
@@ -898,10 +839,7 @@
       const hash = window.location.hash.substring(1);
       const params = new URLSearchParams(hash);
       
-      // Also check query parameters (some OAuth flows use these)
       const searchParams = new URLSearchParams(window.location.search);
-      
-      // Combine both hash and query params
       const allParams = new URLSearchParams(hash + '&' + searchParams.toString());
       
       const oauthError = allParams.get('error') || params.get('error') || searchParams.get('error');
@@ -911,7 +849,6 @@
         document.getElementById('auth-message').textContent = `OAuth error: ${oauthErrorDesc || oauthError}`;
         document.getElementById('auth-message').className = 'error-message';
         document.getElementById('auth-progress').innerHTML = '';
-        console.error('OAuth error details:', { error: oauthError, description: oauthErrorDesc });
         
         // Add retry button
         const retryBtn = document.createElement('button');
@@ -1027,18 +964,12 @@
       document.getElementById('applyDateFilter')?.addEventListener('click', applyDateFilter);
       document.getElementById('clearDateFilter')?.addEventListener('click', clearDateFilter);
       
-      // Analytics column selectors - FIXED: Added change listeners
-      document.addEventListener('change', function(e) {
-        if (e.target.id === 'wordCloudColumn') {
-          generateWordCloud();
-        } else if (e.target.id === 'scoreColumn') {
-          generateScoreDistribution();
-        } else if (e.target.id === 'sentimentColumn') {
-          generateSentimentAnalysis();
-        } else if (e.target.id === 'reviewTextColumn' || e.target.id === 'reviewScoreColumn') {
-          updateTopReviews();
-        }
-      });
+      // Analytics column selectors - SIMPLIFIED APPROACH
+      document.getElementById('wordCloudColumn')?.addEventListener('change', generateWordCloud);
+      document.getElementById('scoreColumn')?.addEventListener('change', generateScoreDistribution);
+      document.getElementById('sentimentColumn')?.addEventListener('change', generateSentimentAnalysis);
+      document.getElementById('reviewTextColumn')?.addEventListener('change', updateTopReviews);
+      document.getElementById('reviewScoreColumn')?.addEventListener('change', updateTopReviews);
       
       // Drag and drop
       const uploadArea = document.getElementById('fileUploadArea');
@@ -1169,7 +1100,7 @@
       return bestDelimiter;
     }
     
-    // Parse CSV data - FIXED: Now properly calls setupAnalytics
+    // Parse CSV data
     function parseCSV(csvText) {
       try {
         // Reset data
@@ -1226,8 +1157,6 @@
         }
         
         console.log(`Parsed ${csvData.length} rows from CSV with ${currentHeaders.length} columns using delimiter: "${delimiter}"`);
-        console.log('Headers:', currentHeaders);
-        console.log('First row:', csvData[0]);
         
         // Set filtered data to all data initially
         filteredData = [...csvData];
@@ -1240,10 +1169,7 @@
         document.getElementById('tableToolbar').style.display = 'flex';
         
         // Setup analytics IMMEDIATELY after data is loaded
-        setTimeout(() => {
-          setupAnalytics();
-          updateAnalytics(); // Generate initial analytics
-        }, 100);
+        setupAnalytics();
         
         showMessage(`Successfully loaded ${csvData.length} rows from CSV (using "${delimiter === '\t' ? 'Tab' : delimiter}" delimiter)`, 'success');
         
@@ -1544,7 +1470,7 @@
       }
     }
     
-    // Setup analytics after data is loaded - FIXED: Now properly called
+    // Setup analytics after data is loaded - SIMPLIFIED AND RELIABLE
     function setupAnalytics() {
       console.log('Setting up analytics with', filteredData.length, 'rows');
       
@@ -1552,111 +1478,69 @@
       const analyticsToolbar = document.getElementById('analyticsToolbar');
       if (analyticsToolbar) {
         analyticsToolbar.style.display = 'flex';
-        console.log('Analytics toolbar shown');
       }
       
       // Update analytics row count
       const analyticsRowCount = document.getElementById('analyticsRowCount');
       if (analyticsRowCount) {
         analyticsRowCount.textContent = `${filteredData.length} rows`;
-        console.log('Analytics row count updated:', filteredData.length);
       }
       
-      // Populate column selectors - CRITICAL FIX
+      // Populate column selectors - SIMPLE AND RELIABLE
       populateColumnSelectors();
       
-      // Setup date range defaults
-      setupDateRange();
+      // Generate initial analytics
+      updateAnalytics();
     }
     
-    // Populate column selectors for analytics - FIXED: Now works correctly
+    // Populate column selectors for analytics - SIMPLIFIED
     function populateColumnSelectors() {
-      console.log('Populating column selectors with headers:', currentHeaders);
+      console.log('Populating column selectors with', currentHeaders.length, 'headers');
       
-      const wordCloudSelect = document.getElementById('wordCloudColumn');
-      const scoreSelect = document.getElementById('scoreColumn');
-      const sentimentSelect = document.getElementById('sentimentColumn');
-      const reviewTextSelect = document.getElementById('reviewTextColumn');
-      const reviewScoreSelect = document.getElementById('reviewScoreColumn');
+      const dropdowns = [
+        { id: 'wordCloudColumn', label: 'Select text column for word cloud...' },
+        { id: 'scoreColumn', label: 'Select score column for analysis...' },
+        { id: 'sentimentColumn', label: 'Select text column for sentiment...' },
+        { id: 'reviewTextColumn', label: 'Review text column...' },
+        { id: 'reviewScoreColumn', label: 'Score column...' }
+      ];
       
-      // Clear existing options except first
-      [wordCloudSelect, scoreSelect, sentimentSelect, reviewTextSelect, reviewScoreSelect].forEach(select => {
-        if (select) {
-          // Keep only the first option (placeholder)
-          while (select.options.length > 1) {
-            select.remove(1);
-          }
+      // Clear and populate all dropdowns
+      dropdowns.forEach(({ id, label }) => {
+        const select = document.getElementById(id);
+        if (!select) {
+          console.error('Dropdown not found:', id);
+          return;
         }
+        
+        // Clear existing options
+        select.innerHTML = `<option value="">${label}</option>`;
+        
+        // Add all headers as options
+        currentHeaders.forEach(header => {
+          const option = document.createElement('option');
+          option.value = header;
+          option.textContent = header;
+          select.appendChild(option);
+        });
       });
       
-      // Add columns to selectors
-      currentHeaders.forEach(header => {
-        const option = document.createElement('option');
-        option.value = header;
-        option.textContent = header;
-        
-        if (wordCloudSelect) wordCloudSelect.appendChild(option.cloneNode(true));
-        if (sentimentSelect) sentimentSelect.appendChild(option.cloneNode(true));
-        if (reviewTextSelect) reviewTextSelect.appendChild(option.cloneNode(true));
-        
-        // For score columns, try to identify numeric columns
-        if (isColumnNumeric(header)) {
-          console.log('Found numeric column:', header);
-          if (scoreSelect) scoreSelect.appendChild(option.cloneNode(true));
-          if (reviewScoreSelect) reviewScoreSelect.appendChild(option.cloneNode(true));
-        }
-      });
-      
-      console.log('Column selectors populated');
-      
-      // Auto-select likely columns based on common names
+      // Auto-select common columns
       autoSelectCommonColumns();
       
-      // Trigger initial generation
-      setTimeout(() => {
-        generateWordCloud();
-        generateScoreDistribution();
-        generateSentimentAnalysis();
-        updateTopReviews();
-      }, 100);
-    }
-    
-    // Check if column is numeric
-    function isColumnNumeric(columnName) {
-      if (!filteredData || filteredData.length === 0) return false;
-      
-      const sampleValues = filteredData.slice(0, Math.min(10, filteredData.length))
-        .map(row => row[columnName])
-        .filter(val => val !== undefined && val !== null && val !== '');
-      
-      if (sampleValues.length === 0) return false;
-      
-      let numericCount = 0;
-      
-      sampleValues.forEach(value => {
-        const strValue = String(value).trim();
-        // Check if it's a number (including decimals and percentages)
-        if (!isNaN(strValue) && strValue !== '' && !strValue.includes(' ')) {
-          numericCount++;
-        }
-      });
-      
-      return numericCount > sampleValues.length * 0.5; // If more than 50% are numeric
+      console.log('Column selectors populated successfully');
     }
     
     // Auto-select common column names
     function autoSelectCommonColumns() {
-      console.log('Auto-selecting common columns');
-      
-      const commonScoreNames = ['score', 'rating', 'percent', 'percentage', 'csat', 'nps', 'satisfaction', 'rating', 'overall'];
-      const commonTextNames = ['review', 'comment', 'feedback', 'text', 'response', 'note', 'description', 'remarks'];
+      const commonScoreNames = ['score', 'rating', 'percent', 'percentage', 'csat', 'nps', 'satisfaction'];
+      const commonTextNames = ['review', 'comment', 'feedback', 'text', 'response', 'note'];
       
       currentHeaders.forEach(header => {
         const lowerHeader = header.toLowerCase();
         
         // Auto-select score column
         if (commonScoreNames.some(name => lowerHeader.includes(name))) {
-          console.log('Auto-selecting score column:', header);
           const scoreSelect = document.getElementById('scoreColumn');
           const reviewScoreSelect = document.getElementById('reviewScoreColumn');
           if (scoreSelect) scoreSelect.value = header;
@@ -1665,7 +1549,6 @@
         
         // Auto-select text column
         if (commonTextNames.some(name => lowerHeader.includes(name))) {
-          console.log('Auto-selecting text column:', header);
           const wordCloudSelect = document.getElementById('wordCloudColumn');
           const sentimentSelect = document.getElementById('sentimentColumn');
           const reviewTextSelect = document.getElementById('reviewTextColumn');
@@ -1675,31 +1558,6 @@
           if (reviewTextSelect) reviewTextSelect.value = header;
         }
       });
-    }
-    
-    // Setup date range picker
-    function setupDateRange() {
-      // Find date columns
-      const dateColumns = currentHeaders.filter(header => {
-        const sampleValues = filteredData.slice(0, 5).map(row => row[header]);
-        return sampleValues.some(value => 
-          value && (value.match(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/) || 
-                   value.match(/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/))
-        );
-      });
-      
-      if (dateColumns.length > 0) {
-        // Set default date range to last 30 days if possible
-        const today = new Date();
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(today.getDate() - 30);
-        
-        const startDateInput = document.getElementById('startDate');
-        const endDateInput = document.getElementById('endDate');
-        
-        if (startDateInput) startDateInput.valueAsDate = thirtyDaysAgo;
-        if (endDateInput) endDateInput.valueAsDate = today;
-      }
     }
     
     // Apply date filter
@@ -1837,32 +1695,33 @@
     
     // Update all analytics
     function updateAnalytics() {
-      console.log('Updating analytics with', filteredData.length, 'rows');
+      console.log('Updating analytics');
       updateKeyMetrics();
-      updateDataQuality();
       
-      // These will be triggered by the dropdown changes
-      if (document.getElementById('wordCloudColumn').value) generateWordCloud();
-      if (document.getElementById('scoreColumn').value) generateScoreDistribution();
-      if (document.getElementById('sentimentColumn').value) generateSentimentAnalysis();
-      if (document.getElementById('reviewTextColumn').value && document.getElementById('reviewScoreColumn').value) updateTopReviews();
+      // Generate analytics based on current selections
+      const wordCloudColumn = document.getElementById('wordCloudColumn').value;
+      const scoreColumn = document.getElementById('scoreColumn').value;
+      const sentimentColumn = document.getElementById('sentimentColumn').value;
+      const reviewTextColumn = document.getElementById('reviewTextColumn').value;
+      const reviewScoreColumn = document.getElementById('reviewScoreColumn').value;
+      
+      if (wordCloudColumn) generateWordCloud();
+      if (scoreColumn) generateScoreDistribution();
+      if (sentimentColumn) generateSentimentAnalysis();
+      if (reviewTextColumn && reviewScoreColumn) updateTopReviews();
     }
     
     // Update key metrics
     function updateKeyMetrics() {
       const keyMetrics = document.getElementById('keyMetrics');
-      if (!keyMetrics) {
-        console.error('Key metrics element not found');
-        return;
-      }
+      if (!keyMetrics) return;
       
       // Calculate basic metrics
       const totalRows = filteredData.length;
       const totalColumns = currentHeaders.length;
       
       // Find score column and calculate average
-      const scoreColumnElement = document.getElementById('scoreColumn');
-      const scoreColumn = scoreColumnElement ? scoreColumnElement.value : '';
+      const scoreColumn = document.getElementById('scoreColumn').value;
       let avgScore = 'N/A';
       let scoreCount = 0;
       
@@ -1875,7 +1734,7 @@
             const cleanVal = String(val).replace('%', '').trim();
             return parseFloat(cleanVal);
           })
-          .filter(score => !isNaN(score));
+          .filter(score => !isNaN(score) && score >= 0 && score <= 100);
         
         if (scores.length > 0) {
           const sum = scores.reduce((a, b) => a + b, 0);
@@ -1928,17 +1787,11 @@
       `;
     }
     
-    // Generate word cloud - FIXED: Now works correctly
+    // Generate word cloud
     function generateWordCloud() {
-      console.log('Generating word cloud');
+      console.log('Generating word cloud...');
       const wordCloudContainer = document.getElementById('wordCloud');
-      if (!wordCloudContainer) {
-        console.error('Word cloud container not found');
-        return;
-      }
-      
-      const wordCloudColumnElement = document.getElementById('wordCloudColumn');
-      const column = wordCloudColumnElement ? wordCloudColumnElement.value : '';
+      const column = document.getElementById('wordCloudColumn').value;
       
       if (!column) {
         wordCloudContainer.innerHTML = `
@@ -1965,8 +1818,6 @@
         return;
       }
       
-      console.log('Text data length:', textData.length);
-      
       // Process text: remove common words, count frequencies
       const stopWords = new Set([
         'the', 'and', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
@@ -1977,11 +1828,7 @@
         'their', 'as', 'from', 'or', 'but', 'not', 'so', 'then', 'than', 'too',
         'very', 'just', 'also', 'about', 'like', 'what', 'which', 'who', 'whom',
         'how', 'when', 'where', 'why', 'all', 'any', 'both', 'each', 'few', 'more',
-        'most', 'other', 'some', 'such', 'no', 'nor', 'only', 'own', 'same',
-        'here', 'there', 'up', 'down', 'out', 'off', 'over', 'under', 'again',
-        'further', 'once', 'while', 'because', 'since', 'until', 'though',
-        'although', 'whether', 'while', 'before', 'after', 'above', 'below',
-        'through', 'during', 'between', 'into', 'within', 'without'
+        'most', 'other', 'some', 'such', 'no', 'nor', 'only', 'own', 'same'
       ]);
       
       // Tokenize and count words
@@ -1989,22 +1836,20 @@
       const wordCounts = {};
       
       words.forEach(word => {
-        if (!stopWords.has(word) && word.length > 2) {
+        if (!stopWords.has(word)) {
           wordCounts[word] = (wordCounts[word] || 0) + 1;
         }
       });
       
-      // Get top 50 words
+      // Get top 40 words
       const topWords = Object.entries(wordCounts)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 50);
-      
-      console.log('Top words:', topWords.length);
+        .slice(0, 40);
       
       if (topWords.length === 0) {
         wordCloudContainer.innerHTML = `
           <div style="text-align: center; padding: 50px 20px; color: #94a3b8;">
-            No significant words found after filtering common words
+            No words found in the selected column
           </div>
         `;
         return;
@@ -2013,14 +1858,14 @@
       // Find max and min frequencies for scaling
       const maxFreq = Math.max(...topWords.map(w => w[1]));
       const minFreq = Math.min(...topWords.map(w => w[1]));
-      const range = maxFreq - minFreq || 1; // Avoid division by zero
+      const range = maxFreq - minFreq || 1;
       
       // Generate word cloud HTML
       wordCloudContainer.innerHTML = '';
       
       topWords.forEach(([word, count]) => {
-        // Calculate font size based on frequency (12px to 36px)
-        const fontSize = 12 + (count - minFreq) / range * 24;
+        // Calculate font size based on frequency
+        const fontSize = 14 + (count - minFreq) / range * 24;
         
         // Calculate color intensity - using teal color scheme
         const intensity = 0.3 + (count - minFreq) / range * 0.7;
@@ -2038,7 +1883,6 @@
         wordElement.style.opacity = 0.7 + intensity * 0.3;
         
         wordElement.addEventListener('click', () => {
-          // Filter table to show rows containing this word
           searchTable(word);
           switchTab('dataTab');
         });
@@ -2049,17 +1893,11 @@
       console.log('Word cloud generated with', topWords.length, 'words');
     }
     
-    // Generate score distribution - FIXED: Now works correctly
+    // Generate score distribution
     function generateScoreDistribution() {
-      console.log('Generating score distribution');
+      console.log('Generating score distribution...');
       const scoreContainer = document.getElementById('scoreDistribution');
-      if (!scoreContainer) {
-        console.error('Score distribution container not found');
-        return;
-      }
-      
-      const scoreColumnElement = document.getElementById('scoreColumn');
-      const column = scoreColumnElement ? scoreColumnElement.value : '';
+      const column = document.getElementById('scoreColumn').value;
       
       if (!column) {
         scoreContainer.innerHTML = `
@@ -2080,8 +1918,6 @@
           return parseFloat(cleanVal);
         })
         .filter(score => !isNaN(score) && score >= 0 && score <= 100);
-      
-      console.log('Scores found:', scores.length);
       
       if (scores.length === 0) {
         scoreContainer.innerHTML = `
@@ -2134,7 +1970,7 @@
       
       // Add score bars with teal gradient
       ranges.forEach(range => {
-        if (range.max <= 100) { // Only show up to 100%
+        if (range.max <= 100) {
           const percentage = maxCount > 0 ? (range.count / maxCount) * 100 : 0;
           const rangeLabel = range.min === 0 ? '0-9' : 
                            range.max === 100 ? '90-100' : 
@@ -2142,9 +1978,9 @@
           
           // Determine color based on score range using teal colors
           let color;
-          if (range.min >= 90) color = 'var(--analytics-teal)'; // Teal for high scores
-          else if (range.min >= 70) color = 'var(--analytics-light-teal)'; // Light teal for medium scores
-          else color = 'var(--analytics-dark-teal)'; // Dark teal for low scores
+          if (range.min >= 90) color = 'var(--analytics-teal)';
+          else if (range.min >= 70) color = 'var(--analytics-light-teal)';
+          else color = 'var(--analytics-dark-teal)';
           
           html += `
             <div class="score-label">
@@ -2159,20 +1995,14 @@
       });
       
       scoreContainer.innerHTML = html;
-      console.log('Score distribution generated');
+      console.log('Score distribution generated for', scores.length, 'scores');
     }
     
-    // Generate sentiment analysis - FIXED: Now works correctly
+    // Generate sentiment analysis
     function generateSentimentAnalysis() {
-      console.log('Generating sentiment analysis');
+      console.log('Generating sentiment analysis...');
       const sentimentContainer = document.getElementById('sentimentAnalysis');
-      if (!sentimentContainer) {
-        console.error('Sentiment analysis container not found');
-        return;
-      }
-      
-      const sentimentColumnElement = document.getElementById('sentimentColumn');
-      const column = sentimentColumnElement ? sentimentColumnElement.value : '';
+      const column = document.getElementById('sentimentColumn').value;
       
       if (!column) {
         sentimentContainer.innerHTML = `
@@ -2187,8 +2017,6 @@
       const texts = filteredData
         .map(row => row[column] || '')
         .filter(text => text && String(text).trim() !== '');
-      
-      console.log('Texts found for sentiment:', texts.length);
       
       if (texts.length === 0) {
         sentimentContainer.innerHTML = `
@@ -2282,23 +2110,15 @@
         </div>
       `;
       
-      console.log('Sentiment analysis generated');
+      console.log('Sentiment analysis generated for', total, 'texts');
     }
     
-    // Update top reviews - FIXED: Now works correctly
+    // Update top reviews
     function updateTopReviews() {
-      console.log('Updating top reviews');
+      console.log('Updating top reviews...');
       const topReviewsContainer = document.getElementById('topReviews');
-      if (!topReviewsContainer) {
-        console.error('Top reviews container not found');
-        return;
-      }
-      
-      const reviewTextColumnElement = document.getElementById('reviewTextColumn');
-      const reviewScoreColumnElement = document.getElementById('reviewScoreColumn');
-      
-      const textColumn = reviewTextColumnElement ? reviewTextColumnElement.value : '';
-      const scoreColumn = reviewScoreColumnElement ? reviewScoreColumnElement.value : '';
+      const textColumn = document.getElementById('reviewTextColumn').value;
+      const scoreColumn = document.getElementById('reviewScoreColumn').value;
       
       if (!textColumn || !scoreColumn) {
         topReviewsContainer.innerHTML = `
@@ -2318,9 +2138,7 @@
         }))
         .filter(review => review.text.trim() !== '' && !isNaN(review.score) && review.score >= 0 && review.score <= 100)
         .sort((a, b) => b.score - a.score)
-        .slice(0, 10); // Top 10 reviews
-      
-      console.log('Reviews found:', reviews.length);
+        .slice(0, 10);
       
       if (reviews.length === 0) {
         topReviewsContainer.innerHTML = `
@@ -2339,9 +2157,9 @@
         reviewCard.className = 'review-card';
         
         // Determine color based on score using teal gradient
-        let scoreColor = 'var(--analytics-dark-teal)'; // Dark teal for low scores
-        if (review.score >= 70) scoreColor = 'var(--analytics-light-teal)'; // Light teal for medium
-        if (review.score >= 90) scoreColor = 'var(--analytics-teal)'; // Teal for high scores
+        let scoreColor = 'var(--analytics-dark-teal)';
+        if (review.score >= 70) scoreColor = 'var(--analytics-light-teal)';
+        if (review.score >= 90) scoreColor = 'var(--analytics-teal)';
         
         reviewCard.innerHTML = `
           <div class="review-header">
@@ -2364,7 +2182,7 @@
         topReviewsContainer.appendChild(reviewCard);
       });
       
-      console.log('Top reviews generated');
+      console.log('Top reviews generated:', reviews.length);
     }
     
     // Toggle review text expansion
@@ -2382,68 +2200,6 @@
         }
       }
     };
-    
-    // Update data quality table
-    function updateDataQuality() {
-      const dataQualityBody = document.getElementById('dataQualityBody');
-      if (!dataQualityBody) {
-        console.error('Data quality body not found');
-        return;
-      }
-      
-      let html = '';
-      
-      currentHeaders.forEach(header => {
-        const values = filteredData.map(row => row[header] || '');
-        const nonEmpty = values.filter(v => String(v).trim() !== '');
-        const empty = values.length - nonEmpty.length;
-        const completeness = values.length > 0 ? Math.round((nonEmpty.length / values.length) * 100) : 0;
-        
-        // Count unique values
-        const uniqueValues = new Set(nonEmpty.map(v => String(v).toLowerCase().trim()));
-        
-        // Determine data type
-        let dataType = 'Text';
-        const sampleValues = nonEmpty.slice(0, 10);
-        
-        if (sampleValues.length > 0) {
-          const numericCount = sampleValues.filter(v => {
-            const strVal = String(v).replace('%', '').trim();
-            return !isNaN(strVal) && strVal !== '' && !strVal.includes(' ');
-          }).length;
-          
-          const dateCount = sampleValues.filter(v => 
-            v && (String(v).match(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/) || 
-                 String(v).match(/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/))
-          ).length;
-          
-          if (dateCount / sampleValues.length > 0.7) {
-            dataType = 'Date';
-          } else if (numericCount / sampleValues.length > 0.7) {
-            dataType = 'Number';
-          }
-        }
-        
-        // Determine completeness color using teal colors
-        let completenessColor = 'var(--analytics-red)';
-        if (completeness >= 80) completenessColor = 'var(--analytics-teal)';
-        else if (completeness >= 50) completenessColor = 'var(--analytics-orange)';
-        
-        html += `
-          <tr>
-            <td><strong>${header}</strong></td>
-            <td>${dataType}</td>
-            <td>${nonEmpty.length}</td>
-            <td>${empty}</td>
-            <td><span style="color: ${completenessColor};">${completeness}%</span></td>
-            <td>${uniqueValues.size}</td>
-          </tr>
-        `;
-      });
-      
-      dataQualityBody.innerHTML = html;
-      console.log('Data quality table updated');
-    }
     
     // Update selected cell count
     function updateSelectedCount() {
@@ -2463,7 +2219,7 @@
       // Get delimiter for export
       let exportDelimiter = currentDelimiter;
       if (exportDelimiter === '\t') {
-        exportDelimiter = '\t'; // Keep as tab
+        exportDelimiter = '\t';
       }
       
       // Create CSV content
@@ -2472,7 +2228,6 @@
       csvData.forEach(row => {
         const rowValues = currentHeaders.map(header => {
           const value = row[header] || '';
-          // Escape quotes and wrap in quotes if contains delimiter or quotes
           const escapedValue = String(value).replace(/"/g, '""');
           if (escapedValue.includes(exportDelimiter) || escapedValue.includes('"') || escapedValue.includes('\n') || escapedValue.includes('\r')) {
             return `"${escapedValue}"`;
@@ -2521,29 +2276,38 @@
         document.getElementById('analyticsRowCount').textContent = '0 rows';
         
         // Reset analytics tab
-        const keyMetrics = document.getElementById('keyMetrics');
-        const wordCloud = document.getElementById('wordCloud');
-        const scoreDistribution = document.getElementById('scoreDistribution');
-        const sentimentAnalysis = document.getElementById('sentimentAnalysis');
-        const topReviews = document.getElementById('topReviews');
-        const dataQualityBody = document.getElementById('dataQualityBody');
-        
-        if (keyMetrics) keyMetrics.innerHTML = '';
-        if (wordCloud) wordCloud.innerHTML = '';
-        if (scoreDistribution) scoreDistribution.innerHTML = '';
-        if (sentimentAnalysis) sentimentAnalysis.innerHTML = '';
-        if (topReviews) topReviews.innerHTML = '';
-        if (dataQualityBody) dataQualityBody.innerHTML = '';
+        document.getElementById('keyMetrics').innerHTML = '';
+        document.getElementById('wordCloud').innerHTML = `
+          <div style="text-align: center; padding: 50px 20px; color: #94a3b8;">
+            Select a text column to generate word cloud
+          </div>
+        `;
+        document.getElementById('scoreDistribution').innerHTML = `
+          <div style="text-align: center; padding: 50px 20px; color: #94a3b8;">
+            Select a score column to see distribution
+          </div>
+        `;
+        document.getElementById('sentimentAnalysis').innerHTML = `
+          <div style="text-align: center; padding: 30px 20px; color: #94a3b8;">
+            Select a text column for sentiment analysis
+          </div>
+        `;
+        document.getElementById('topReviews').innerHTML = `
+          <div style="text-align: center; padding: 50px 20px; color: #94a3b8;">
+            Select text and score columns to see top reviews
+          </div>
+        `;
         
         // Reset dropdowns
         const dropdowns = ['wordCloudColumn', 'scoreColumn', 'sentimentColumn', 'reviewTextColumn', 'reviewScoreColumn'];
         dropdowns.forEach(id => {
           const dropdown = document.getElementById(id);
           if (dropdown) {
-            while (dropdown.options.length > 1) {
-              dropdown.remove(1);
-            }
-            dropdown.value = '';
+            dropdown.innerHTML = `<option value="">${dropdown.id === 'wordCloudColumn' ? 'Select text column for word cloud...' : 
+                                              dropdown.id === 'scoreColumn' ? 'Select score column for analysis...' :
+                                              dropdown.id === 'sentimentColumn' ? 'Select text column for sentiment...' :
+                                              dropdown.id === 'reviewTextColumn' ? 'Review text column...' :
+                                              'Score column...'}</option>`;
           }
         });
         
